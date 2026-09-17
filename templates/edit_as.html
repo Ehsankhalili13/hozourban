@@ -1,152 +1,43 @@
 {% extends "base.html" %}
 
 {% block header %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/general/edit_as.css') }}">
-    <title>تغییر دانش آموزان غایب</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/general/edit_as.css') }}">
+<title>تغییر دانش‌آموزان غایب</title>
 {% endblock %}
 
 {% block body %}
-    <div class="alert" role="alert"></div>
-
-    <div class="container">
-        <h1 class="title">تغییر دانش آموزان حاضر و غایب</h1>
-        <hr class="line">
-
-        <div class="user-data">
-            <div class="name">
-                <p class="name">نام و نام خانوادگی:</p>
-                <p class="value">در حال بارگذاری...</p>
-            </div>
-            <div class="role">
-                <p class="name">نقش من:</p>
-                <p class="value">در حال بارگذاری...</p>
-            </div>
-            <div class="c-number">
-                <p class="name">شماره کلاس من:</p>
-                <p class="value">در حال بارگذاری...</p>
-            </div>
-        </div>
-
-        <hr class="line">
-
-        <div class="action-nav">
-            <button type="button" class="btn btn-success add-as">اضافه کردن دانش‌آموز غایب</button>
-            <button type="button" class="btn btn-primary submit-btn">ارسال فرم</button>
-        </div>
-
-        <hr class="line">
-        <p class="no-a-student">بدون دانش آموز غایب</p>
-
-        <ul class="absence-student-list">
-            {% for student in absence_student %}
-                <li class="item">
-                    <span>{{ student }}</span>
-                    <button type="button" class="btn btn-success attendance">حاضر است</button>
-                </li>
-            {% endfor %}
-        </ul>
+<div class="alert" role="alert"></div>
+<div class="container">
+    <h1 class="title">تغییر دانش‌آموزان حاضر و غایب</h1>
+    <hr class="line">
+    <div class="user-data">
+        <div class="name"><p class="name">نام و نام خانوادگی:</p><p class="value">در حال بارگذاری...</p></div>
+        <div class="role"><p class="name">نقش من:</p><p class="value">در حال بارگذاری...</p></div>
+        <div class="c-number"><p class="name">کلاس مورد ویرایش:</p><p class="value">{{ selected_class }}</p></div>
     </div>
+    <hr class="line">
+    <div class="action-nav">
+        <button type="button" class="btn btn-success add-as">اضافه کردن دانش‌آموز غایب</button>
+        <button type="button" class="btn btn-primary submit-btn">ارسال فرم</button>
+    </div>
+    <hr class="line">
+    <p class="no-a-student">بدون دانش آموز غایب</p>
+    <ul class="absence-student-list">
+        {% for student in absence_student %}
+        <li class="item"><span>{{ student }}</span><button type="button" class="btn btn-success attendance">حاضر است</button></li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}
 
 {% block script %}
 <script>
-    const addBtn = document.querySelector(".add-as");
-    const submitBtn = document.querySelector(".submit-btn");
-    const list = document.querySelector(".absence-student-list");
-    const noStudentText = document.querySelector(".no-a-student");
-    const alertEl = document.querySelector(".alert");
+const addBtn=document.querySelector(".add-as"),submitBtn=document.querySelector(".submit-btn"),list=document.querySelector(".absence-student-list"),noStudentText=document.querySelector(".no-a-student"),alertEl=document.querySelector(".alert"),selectedClass={{ selected_class|tojson }};
 
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const response = await fetch("/api/userInfo");
-            if (!response.ok) throw new Error();
-            const data = await response.json();
-
-            document.querySelector(".name .value").textContent = data.FullName || "-";
-            document.querySelector(".role .value").textContent = convertRole(data.UserLevel);
-            document.querySelector(".c-number .value").textContent = data.ClassNumber || "-";
-            updateEmptyState();
-        } catch (error) {
-            document.querySelector(".name .value").textContent = "خطا در دریافت اطلاعات";
-            document.querySelector(".role .value").textContent = "خطا در دریافت اطلاعات";
-            document.querySelector(".c-number .value").textContent = "خطا در دریافت اطلاعات";
-        }
-    });
-
-    list.addEventListener("click", (e) => {
-        if (e.target.classList.contains("attendance")) {
-            e.target.closest(".item").remove();
-            updateEmptyState();
-        }
-    });
-
-    addBtn.addEventListener("click", () => {
-        if (list.querySelectorAll(".item").length >= 16) {
-            showAlert(alertEl, "حداکثر ۱۶ دانش‌آموز می‌توانید اضافه کنید.", "danger");
-            return;
-        }
-
-        const name = prompt("نام دانش آموز غایب جدید را وارد نمایید.");
-        if (name === null) return;
-
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-            showAlert(alertEl, "نام دانش‌آموز نمی‌تواند خالی باشد.", "danger");
-            return;
-        }
-
-        const li = document.createElement("li");
-        li.className = "item";
-        li.innerHTML = `<span></span><button type="button" class="btn btn-success attendance">حاضر است</button>`;
-        li.querySelector("span").textContent = trimmedName;
-        list.appendChild(li);
-        updateEmptyState();
-    });
-
-    submitBtn.addEventListener("click", async (e) => {
-        const btn = e.currentTarget;
-        if (btn.disabled) return;
-
-        const names = [...list.querySelectorAll(".item span")]
-            .map(item => item.textContent.trim())
-            .filter(Boolean);
-
-        btn.disabled = true;
-        const originalText = btn.textContent;
-        btn.textContent = "در حال ارسال...";
-
-        try {
-            const response = await fetch("/api/editAbsenceStudent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ absenceStudent: names.join(" - ") })
-            });
-
-            const data = await response.json();
-            showAlert(alertEl, data.message, data.category);
-
-            if (response.ok) {
-                setTimeout(() => window.location.href = "/dashboard", 1500);
-            }
-        } catch (error) {
-            showAlert(alertEl, "ارتباط با سرور برقرار نشد.", "danger");
-        } finally {
-            btn.disabled = false;
-            btn.textContent = originalText;
-        }
-    });
-
-    function updateEmptyState() {
-        noStudentText.classList.toggle("noas-true", list.querySelectorAll(".item").length === 0);
-    }
-
-    function convertRole(level) {
-        switch (level) {
-            case 1: return "معلم";
-            case 2: return "مدیر";
-            case 3: return "مدیر ارشد";
-            default: return "نامشخص";
-        }
-    }
+document.addEventListener("DOMContentLoaded",async()=>{try{const r=await fetch("/api/userInfo");if(!r.ok)throw new Error();const d=await r.json();document.querySelector(".name .value").textContent=d.FullName||"-";document.querySelector(".role .value").textContent=(d.Roles||[]).join("، ")||"-";updateEmptyState()}catch(e){document.querySelector(".name .value").textContent="خطا در دریافت اطلاعات";document.querySelector(".role .value").textContent="خطا در دریافت اطلاعات"}});
+list.addEventListener("click",e=>{if(e.target.classList.contains("attendance")){e.target.closest(".item").remove();updateEmptyState()}});
+addBtn.addEventListener("click",()=>{if(list.querySelectorAll(".item").length>=16){showAlert(alertEl,"حداکثر ۱۶ دانش‌آموز می‌توانید اضافه کنید.","danger");return}const name=prompt("نام دانش آموز غایب جدید را وارد نمایید.");if(name===null)return;const trimmed=name.trim();if(!trimmed){showAlert(alertEl,"نام دانش‌آموز نمی‌تواند خالی باشد.","danger");return}const li=document.createElement("li");li.className="item";li.innerHTML='<span></span><button type="button" class="btn btn-success attendance">حاضر است</button>';li.querySelector("span").textContent=trimmed;list.appendChild(li);updateEmptyState()});
+submitBtn.addEventListener("click",async e=>{const btn=e.currentTarget;if(btn.disabled)return;const names=[...list.querySelectorAll(".item span")].map(x=>x.textContent.trim()).filter(Boolean);btn.disabled=true;const old=btn.textContent;btn.textContent="در حال ارسال...";try{const r=await fetch("/api/editAbsenceStudent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({class_number:selectedClass,absenceStudent:names.join(" - ")})});const d=await r.json();showAlert(alertEl,d.message,d.category);if(r.ok)setTimeout(()=>location.href="/dashboard",1200)}catch(e){showAlert(alertEl,"ارتباط با سرور برقرار نشد.","danger")}finally{btn.disabled=false;btn.textContent=old}});
+function updateEmptyState(){noStudentText.classList.toggle("noas-true",list.querySelectorAll(".item").length===0)}
 </script>
 {% endblock %}
