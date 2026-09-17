@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/base.css')}}">
+    
+    {% block header %}{% endblock %}
+    <script>
+        function showAlert(alertElement, message, type) {
+            if (alertElement) {
+                alertElement.innerHTML = message;
+                alertElement.style.display = "block"
+                alertElement.className = `alert alert-${type}`
+                setTimeout(() => { alertElement.classList.add("show") }, 10)
+                setTimeout(() => { alertElement.classList.remove('show'); }, 5000);
+            } else {
+                console.error('Element with class "alert" not found!');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="bg"></div>
+    {% block body %}{% endblock %}
+    
+
+    {% block script %}{% endblock %}
+</body>
+</html>

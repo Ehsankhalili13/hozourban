@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/general/t_panel.css') }}">
+    <title>سیستم حضور و غیاب</title>
+{% endblock %}
+
+{% block body %}
+    <div class="alert" role="alert"></div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-card">
+            <h2 class="page-title">به سیستم حضور و غیاب خوش آمدید!</h2>
+
+            <div class="user-info">
+                <div class="info-item name">
+                    <span class="label">نام و نام خانوادگی:</span>
+                    <span class="value val-ul-n">در حال بارگذاری...</span>
+                </div>
+
+                <div class="info-item role">
+                    <span class="label">نقش من:</span>
+                    <span class="value val-ul-r">در حال بارگذاری...</span>
+                </div>
+
+                <div class="info-item role">
+                    <span class="label">شماره کلاس من :</span>
+                    <span class="value val-ul-cn">در حال بارگذاری...</span>
+                </div>
+            </div>
+
+            <div class="absence-section">
+                <div class="form-group">
+                    <div class="action-section">
+                        <div class="button-group">
+                            <a href="" class="btn btn-success add-student">اضافه کردن دانش‌آموز غایب</a>
+                            <a href="" class="btn btn-warning no-student"> دانش آموز غایب ندارم!</a>
+                            <a href="/logout" class="btn btn-danger logout">خروج از حساب کاربری</a>
+                            <hr>
+                            <a href="" class="btn btn-primary submit">ارسال فرم</a>
+                        </div>
+
+                        <div class="students-inputs" id="students-inputs">
+                            <input type="text" placeholder="نام دانش‌آموز غایب" class="student-input">
+                        </div>
+                        <p class="nas__text">بدون دانش آموز غایب</p>
+                        <div class="submit-action">
+                            <p class="sub__text">شما دانش آموزان خود را ثبت کرده اید!!</p>
+                            <div style="height: 10px;"></div>
+                            <a href="/editAbsenceStudent" class="btn btn-primary edit-as">ویرایش غایبان</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        const addBtn = document.querySelector(".add-student");
+        const nasBtn = document.querySelector(".no-student");
+        const submitBtn = document.querySelector(".submit")
+        const inputsContainer = document.getElementById("students-inputs");
+        const alertEl = document.querySelector(".alert");
+
+
+        let CNum
+        let isEntered = false
+        let isNoAbsenceStudent = false
+        let isNasBtnclicked1 = false
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const auth = 'Basic ' + btoa('admin:9xiNCb06bOjK$Fh');
+                const res = await fetch("/api/userInfo", {
+                    method: "POST",
+                    headers: {
+                        'Authorization': auth,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ psw: "9xiNCb06bOjK$Fh" })
+                });
+
+                const data = await res.json();
+
+                CNum = data.ClassNumber
+                document.querySelector(".val-ul-n").textContent = data.FullName;
+                document.querySelector(".val-ul-r").textContent = convertRole(data.UserLevel);
+                document.querySelector(".val-ul-cn").textContent = data.ClassNumber;
+
+                const data2 = await (await fetch("/api/isEnterAbsenceStudent", {
+                    method: "POST",
+                    headers: {
+                        'Authorization': auth,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ClassNumber: data.ClassNumber })
+                })).json();
+                const inputs = inputsContainer.querySelectorAll(".student-input");
+                if (data2.message == "Entered") { Entered(); isEntered = true }
+            } catch (err) {
+                document.querySelector(".val-ul-n").textContent = "خطا در دریافت اطلاعات";
+                document.querySelector(".val-ul-r").textContent = "خطا در دریافت اطلاعات";
+                document.querySelector(".val-ul-cn").textContent = "خطا در دریافت اطلاعات";
+            }
+        });
+
+        addBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (isEntered) {
+                showAlert(alertEl, "شما دانش آموزان خود را وارد کرده اید.برای تغییر رو دکمه 'ویرایش غایبان' ضربه بزنید.", "warning")
+            } else {
+                if (!isNoAbsenceStudent) {
+                    const inputs = inputsContainer.querySelectorAll(".student-input");
+                    if (inputs.length >= 16) {
+                        showAlert(alertEl, "حداکثر ۱۶ دانش‌آموز می‌توانید اضافه کنید.", "danger");
+                        return;
+                    }
+
+                    const newInput = document.createElement("input");
+                    newInput.type = "text";
+                    newInput.placeholder = "نام دانش‌آموز غایب";
+                    newInput.classList.add("student-input");
+                    inputsContainer.appendChild(newInput);
+
+                    updateGridColumns(inputs.length + 1);
+                } else {
+                    showAlert(alertEl, "ابتدا دکمه 'دانش آموز غایب دارم' را بزنید.", "danger")
+                }
+            }
+        });
+
+        nasBtn.addEventListener("click", (e) => {
+            e.preventDefault()
+            if (isEntered) {
+                showAlert(alertEl, "شما دانش آموزان خود را وارد کرده اید.برای تغییر رو دکمه 'ویرایش غایبان' ضربه بزنید.", "warning")
+            } else {
+                if (isNasBtnclicked1) {
+                    document.querySelector(".nas__text").classList.remove("ntext-true");
+                    nasBtn.textContent = "دانش آموز غایب ندارم!"
+                    isNasBtnclicked1 = false
+                    isNoAbsenceStudent = false
+
+                    const newInput = document.createElement("input");
+                    newInput.type = "text";
+                    newInput.placeholder = "نام دانش‌آموز غایب";
+                    newInput.classList.add("student-input");
+                    inputsContainer.appendChild(newInput);
+                    const inputs = inputsContainer.querySelectorAll(".student-input");
+                    updateGridColumns(inputs.length + 1);
+                } else {
+                    isNasBtnclicked1 = true
+                    isNoAbsenceStudent = true
+                    nasBtn.textContent = "دانش آموز غایب دارم!"
+                    let inputs = inputsContainer.querySelectorAll(".student-input");
+                    let defaultInputLength = inputs.length
+                    let i = 0
+                    while (i <= defaultInputLength && inputs.length > 0) {
+                        console.log(`To While{ i : ${i} inputs : ${inputs.length} }`)
+                        inputs[inputs.length - 1].remove();
+                        updateGridColumns(inputs.length - 1);
+                        inputs = inputsContainer.querySelectorAll(".student-input");
+                        i++
+                    }
+                    document.querySelector(".nas__text").classList.add("ntext-true");
+                }
+            }
+        })
+
+        submitBtn.addEventListener("click", async (e) => {
+            e.preventDefault()
+            if (isEntered) {
+                showAlert(alertEl, "شما دانش آموزان خود را وارد کرده اید.برای تغییر رو دکمه 'ویرایش غایبان' ضربه بزنید.", "warning")
+            } else {
+                const btn = event.currentTarget
+                if (btn.disabled) return;
+                btn.disabled = true
+                const originalText = btn.textContent;
+                btn.textContent = "در حال ارسال"
+                const subReq = await fetch("/api/setAbsenceStudent", {
+                    method: "POST",
+                    headers: { 'Content-Type': 'Application/json' },
+                    body: JSON.stringify({ 'classNumber': CNum, 'absenceStudent': camaStudent() })
+                })
+                const res = await subReq.json()
+                showAlert(alertEl, res.message, res.category)
+                btn.disabled = false;
+                btn.textContent = originalText
+                setTimeout(() => { window.location.reload() }, 5000)
+            }
+        })
+
+        function camaStudent() {
+            const iL = document.querySelectorAll(".student-input").length
+            let aName = []
+
+            for (let index = 0; index < iL; index++) {
+                const elementValue = document.querySelector(`.student-input:nth-child(${index + 1})`).value;
+                if (elementValue == null) showAlert(alertEl, "لطفا تمام فیلد ها را پر کنید.", "danger")
+                aName.push(elementValue)
+            }
+            aName = aName.join(" - ")
+            return aName
+        }
+
+        function convertRole(level) {
+            switch (level) {
+                case 1: return "معلم";
+                case 2: return "کادر مدرسه";
+                default: return "نامشخص";
+            }
+        }
+
+        function updateGridColumns(count) {
+            if (count <= 4) {
+                inputsContainer.style.gridTemplateColumns = "repeat(2, 1fr)";
+            } else if (count <= 9) {
+                inputsContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
+            } else {
+                inputsContainer.style.gridTemplateColumns = "repeat(4, 1fr)";
+            }
+        }
+
+        function Entered() {
+            let inputs = inputsContainer.querySelectorAll(".student-input");
+            let defaultInputLength = inputs.length
+            let i = 0
+            while (i <= defaultInputLength && inputs.length > 0) {
+                inputs[inputs.length - 1].remove();
+                updateGridColumns(inputs.length - 1);
+                inputs = inputsContainer.querySelectorAll(".student-input");
+                i++
+            }
+            document.querySelector(".submit-action").classList.add("sa-true");
+        }
+    </script>
+{% endblock %}

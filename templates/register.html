@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/general/login_reg.css')}}">
+    <title>ثبت نام در درگاه حضور و غیاب</title>
+{% endblock %}
+
+{% block body %}
+
+    <div class="alert" role="alert"></div>
+
+    <div class="reg__container">
+        <div class="neon-box">
+            <form method="post" class="form">
+                <p class="form-title">ثبت نام</p>
+                <div class="input-container">
+                    <input type="text" name="full_name" placeholder="نام و نام خانوادگی">
+                    <span>
+                    </span>
+                </div>
+                
+
+                <div class="input-container">
+                    <input type="text" name="username" placeholder="نام کاربری">
+                    <span>
+                    </span>
+                </div>
+                <div class="input-container">
+                    <input type="password" name="password" placeholder="رمز عبور">
+                    <a href="" class="create_pass" >ساخت رمز عبور قوی</a>
+                </div>
+                <button type="submit" class="submit">
+                    ثبت نام
+                </button>
+
+                <p class="signup-link">
+                    حساب دارید؟
+                    <a href="/login">ورود</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        const form = document.querySelector(".form")
+
+        document.querySelector(".create_pass").addEventListener("click", async (e) => {
+            e.preventDefault();
+            
+            function getPL() {
+                return window.prompt("طول رمز عبور را وارد نمایید.");
+            }
+
+            let passLength = getPL()
+            
+            if (!passLength || passLength.trim() === "") {
+                alert("طول رمز وارد نشده!");
+                return;
+            } else if (passLength.trim() > 20 ) {
+                alert("عدد کمتر از 20 وارد نمایید")
+                passLength = getPL()
+            }
+
+            try {
+                async function Req(pL) {   
+                    const res = await fetch("/api/create_password/" + pL);
+                    return await res.json();
+                }
+
+                let data = await Req(passLength)
+
+                if (data.error == 'Error: invalid value') {
+                    alert("لطفا فقط عدد وارد نمایید");
+                    passLength = window.prompt("طول رمز عبور را وارد نمایید.");
+                    data = await Req(passLength)
+                } else {
+                    const passwordInput = document.querySelector('input[placeholder="رمز عبور"]');
+                    passwordInput.value = data.password;
+                    alert("رمز عبور قوی ساخته شد و در فیلد قرار گرفت!  رمز: " + data.password);
+                }
+            } catch (err) {
+                console.error("Server Error");
+                alert("خطایی رخ داد. دوباره تلاش کنید.");
+            }
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault()
+
+            let jsonData = {
+                full_name: form.full_name.value.trim(),
+                username: form.username.value.trim(),
+                password: form.password.value.trim()
+            };
+
+
+
+            const req = await fetch("/api/reg_api", {
+                method: "POST",
+                headers: {
+                    'Content-Type' : 'application/json',
+                    'Accept' : 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })    
+            const res = await req.json()
+
+
+            showAlert(document.querySelector(".alert"),res.message, res.category)
+
+            if (res.message == "ثبت نام شما موفقیت آمیز بود.لطفا منتظر بمانید.") {
+                setTimeout(() => {
+                    window.location.href = "/dashboard"
+                }, 1500)
+            }
+        })
+    </script>
+{% endblock %}

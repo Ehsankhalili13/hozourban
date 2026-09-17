@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/general/edit_as.css') }}">
+    <title>تغییر دانش آموزان غایب</title>
+{% endblock %}
+
+{% block body %}
+    <div class="alert" role="alert"></div>
+
+    <div class="container">
+        <h1 class="title">تغییر دانش آموزان حاضر و غایب</h1>
+        
+        <hr class="line">
+        
+        <div class="user-data">
+            <div class="name">
+                <p class="name">نام و نام خانوادگی:</p>
+                <p class="value"></p>
+            </div>
+            <div class="role">
+                <p class="name">نقش من:</p>
+                <p class="value"></p>
+            </div>
+            <div class="c-number">
+                <p class="name">شماره کلاس من:</p>
+                <p class="value"></p>
+            </div>
+        </div>
+        
+        <hr class="line">
+
+        <div class="action-nav">
+            <button class="btn btn-success add-as">اضافه کردن دانش‌آموز غایب</button>
+            <button class="btn btn-primary submit-btn">ارسال فرم</button>
+        </div>
+
+        <hr class="line">
+
+        <p class="no-a-student">بدون دانش آموز غایب</p>
+
+        <ul class="absence-student-list">
+            {% for i in absence_student %}
+                <li class="item">
+                    <span>{{i}}</span>
+                    <button class="btn btn-success attendance" onclick="oc_attendance(this)">حاضر است</button>
+                </li>
+            {% endfor %}
+            
+        </ul>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        const addBtn = document.querySelector(".add-as");
+        const submitBtn = document.querySelector(".submit-btn");
+        const attendanceBtn = document.querySelector(".attendance")
+        const alertEl = document.querySelector(".alert")
+
+        let CNum
+        let isNoAbsenceStudent = false
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const auth = 'Basic ' + btoa('admin:9xiNCb06bOjK$Fh');
+                const data = await ( await fetch("/api/userInfo", {
+                    method: "POST",
+                    headers: {
+                        'Authorization': auth,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ psw: "9xiNCb06bOjK$Fh" })
+                })).json();
+
+                CNum = data.ClassNumber
+                document.querySelector(".name .value").textContent = data.FullName;
+                document.querySelector(".role .value").textContent = convertRole(data.UserLevel);
+                document.querySelector(".c-number .value").textContent = data.ClassNumber;
+
+
+                if (document.querySelector(".item").querySelector("span").textContent == "No Absence Student") {
+                    oc_attendance(document.querySelector(".item").querySelector("button"))
+                    isNoAbsenceStudent = true
+                    setTimeout(() => {document.querySelector(".no-a-student").classList.add("noas-true")}, 1500)
+                }
+            } catch (err) {
+                document.querySelector(".data-value .name").textContent = "خطا در دریافت اطلاعات";
+                document.querySelector(".data-value .role").textContent = "خطا در دریافت اطلاعات";
+                document.querySelector(".data-value .c-number").textContent = "خطا در دریافت اطلاعات";
+            }
+        });
+
+        addBtn.addEventListener("click", () => {
+            let newAbsenceStudent = prompt("نام دانش آموز غایب جدید را وارد نمایید.");
+            
+            if (isNoAbsenceStudent) {
+                document.querySelector(".no-a-student").classList.remove("noas-true")
+            }
+            
+            let liItem = document.createElement("li");
+            liItem.classList.add("item");
+            let spanItem = document.createElement("span");
+            spanItem.textContent = newAbsenceStudent;
+            let btnItem = document.createElement("button");
+            btnItem.textContent = "حاضر است";
+            btnItem.className = "btn btn-success attendance";
+            btnItem.setAttribute("onclick", "oc_attendance(this)");
+            liItem.appendChild(spanItem);
+            liItem.appendChild(btnItem);
+            document.querySelector(".absence-student-list").appendChild(liItem);
+        })
+
+        submitBtn.addEventListener("click", async () => {
+            const btn = event.currentTarget
+            if (btn.disabled) return;
+            btn.disabled = true
+            const originalText = btn.textContent;
+            btn.textContent = "در حال ارسال"
+
+            let items = document.querySelectorAll(".item").length
+            let aName = []
+            for (let index = 0; index < items; index++) {
+                const elementValue = document.querySelector(`.item:nth-child(${index + 1})`).querySelector("span").textContent;
+                aName.push(elementValue)
+            }
+            aName = aName.join(" - ")
+            const subReq = await fetch("/api/editAbsenceStudent", {
+                method: "POST",
+                headers: { 'Content-Type': 'Application/json' },
+                body: JSON.stringify({ 'classNumber': CNum , 'absenceStudent': aName })
+            })
+            const res = await subReq.json()
+            btn.disabled = false;
+            btn.textContent = originalText
+            showAlert(alertEl, res.message, res.category)
+            setTimeout(() => { window.location.href = "/dashboard" }, 5000)
+
+
+        })
+
+        function oc_attendance(btnObj) {
+            btnObj.parentElement.remove()
+            if (document.querySelector(".item") == undefined) {
+                document.querySelector(".no-a-student").classList.add("noas-true")
+            }
+        }
+
+        function convertRole(level) {
+            switch(level) {
+                case 1: return "معلم";
+                case 2: return "کادر مدرسه";
+                default: return "نامشخص";
+            }
+        }
+    </script>
+{% endblock %}

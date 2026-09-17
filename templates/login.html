@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{url_for('static', filename='css/general/login_reg.css')}}">
+    <title>ورود به درگاه حضور و غیاب</title>
+{% endblock %}
+
+{% block body %}
+    <div class="alert" role="alert"></div>
+
+    {% with msg = get_flashed_messages(with_categories=true) %}
+        {% if msg %}
+            {% for c, m in msg %}
+                <script>
+                    showAlert(document.querySelector(".alert"), "{{m}}", "{{c}}")
+                </script>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="neon-box">
+        <div class="login">
+            <form method="post" class="form">
+                <p class="form-title">ورود</p>
+                <div class="input-container">
+                    <input type="text" name="username" placeholder="نام کاربری">
+                    <span>
+                    </span>
+                </div>
+                <div class="input-container">
+                    <input type="password" name="password" placeholder="رمز عبور">
+                </div>
+                <button type="submit" class="submit">
+                    ورود
+                </button>
+
+                <p class="signup-link">
+                    حسابی ندارید
+                    <a href="/register">ثبت نام</a>
+                </p>
+            </form>
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        const form = document.querySelector(".form")
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault()
+
+            const result = await fetch("/api/login_api", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: form.username.value.trim(),
+                    password: form.password.value.trim()
+                })
+            })
+
+            switch (result.status) {
+                case 200:
+                    showAlert(document.querySelector(".alert"), "ورود موفقیت‌آمیز بود.", "success");
+                    setTimeout(() => {
+                        window.location.href = "/dashboard";
+                    }, 1500);
+                    break;
+
+                case 401:
+                    showAlert(document.querySelector(".alert"), "نام کاربری یا رمز عبور اشتباه است.", "danger");
+                    setTimeout(() => { }, 1500);
+                    break;
+
+                case 500:
+                    showAlert(document.querySelector(".alert"), "در فرایند ورود مشکلی پیش آمد.", "danger");
+                    throw new Error(`${result.status} ${result.statusText} in ${result.url}`)
+                    setTimeout(() => { }, 1500);
+                    break;
+
+            }
+        })
+    </script>
+{% endblock %}

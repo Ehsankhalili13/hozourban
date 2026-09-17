@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet"
+        type="text/css" />
+    <style>
+        :root {
+            --bg-color: #0a1128;
+            --card-bg: rgba(28, 37, 65, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-blue: #00b4d8;
+            --accent-purple: #7209b7;
+            --text-main: #f8f9fa;
+            --text-muted: #8d99ae;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(at 20% 20%, rgba(0, 180, 216, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(114, 9, 183, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .status-tester {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .status-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .status-btn:hover,
+        .status-btn.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 180, 216, 0.2);
+        }
+
+        .response-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 50px 40px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .status-code {
+            font-size: 6rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .status-desc {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .tech-details {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #a0aec0;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+            direction: ltr;
+        }
+
+        .tech-details#tech {
+            margin-bottom: 10px;
+        }
+
+        .btn-action {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-blue), #0077b6);
+            color: #fff;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 180, 216, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <input type="hidden" value="{{ status_code }}">
+
+    <div class="response-card" id="card">
+        <div class="status-code" id="code"></div>
+        <h1 class="status-title" id="title"></h1>
+        <p class="status-desc" id="desc"></p>
+
+        <div class="tech-details" id="tech"></div>
+        <div class="tech-details">{{ e }}</div>
+
+        <a href="#" class="btn-action" id="btn">بازگشت به صفحه اصلی</a>
+    </div>
+
+    <script>
+        const data = {
+            '404': {
+                title: 'صفحه مورد نظر پیدا نشد',
+                desc: 'آدرسی که دنبال آن هستید وجود ندارد، پاک شده یا تغییر نام یافته است.',
+                tech: 'ERROR_CODE: 404_NOT_FOUND',
+                btnText: 'بازگشت به خانه',
+                btnUrl: '/'
+            },
+            '401': {
+                title: 'نیازمند احراز هویت',
+                desc: 'برای دسترسی به این بخش یا منبع باید ابتدا وارد حساب کاربری خود شوید.',
+                tech: 'ERROR_CODE: 401_UNAUTHORIZED',
+                btnText: 'ورود به حساب کاربری',
+                btnUrl: '/login'
+            },
+            '403': {
+                title: 'دسترسی غیرمجاز',
+                desc: 'شما مجوزهای لازم برای مشاهده این بخش را ندارید.',
+                tech: 'ERROR_CODE: 403_FORBIDDEN',
+                btnText: 'بازگشت به خانه',
+                btnUrl: '/'
+            },
+            '500': {
+                title: 'خطای داخلی سرور',
+                desc: 'مشکلی در سمت سرور رخ داده است. تیم فنی ما در حال بررسی موضوع است.',
+                tech: 'ERROR_CODE: 500_INTERNAL_SERVER_ERROR',
+                btnText: 'تلاش مجدد',
+                btnUrl: 'javascript:location.reload()'
+            },
+            '200': {
+                title: 'عملیات با موفقیت انجام شد',
+                desc: 'درخواست شما بدون هیچ مشکلی پردازش شد و همه چیز مرتب است.',
+                tech: 'STATUS: 200_OK',
+                btnText: 'ادامه مسیر',
+                btnUrl: '/'
+            }
+        };
+
+        function updateResponse(code) {
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active'));
+
+            const card = document.getElementById('card');
+            card.style.animation = 'none';
+            card.offsetHeight;
+            card.style.animation = 'fadeIn 0.4s ease-in-out';
+
+            const res = data[code];
+            document.getElementById('code').innerText = code;
+            document.getElementById('title').innerText = res.title;
+            document.querySelector('title').innerText = res.title;
+            document.getElementById('desc').innerText = res.desc;
+            document.getElementById('tech').innerText = res.tech;
+
+            const btn = document.getElementById('btn');
+            btn.innerText = res.btnText;
+            btn.href = res.btnUrl;
+        }
+
+        updateResponse(document.querySelector("input[type=hidden]").value)
+    </script>
+</body>
+
+</html>
