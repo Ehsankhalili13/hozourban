@@ -14,7 +14,7 @@ app = Flask(__name__)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'database.db')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.secret_key = os.environ.get("SECRET_KEY", "OK2oOkNbUq0iDIct$@*E")
+app.secret_key = os.environ.get("SECRET_KEY", "OK2oOkNbUq0iDIct$@*")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -30,8 +30,8 @@ class Users(UserMixin, db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     user_level = db.Column(db.Integer, default=0)
-    class_number = db.Column(db.String(20), unique=True)
     roles = db.relationship("UserRole", back_populates="user", cascade="all, delete-orphan", lazy="selectin")
+    classes = db.relationship("UserClass", back_populates="user", cascade="all, delete-orphan", lazy="selectin")
 
     def set_password(self, password):
         self.password = password
@@ -45,6 +45,12 @@ class Users(UserMixin, db.Model):
     def role_names(self):
         return [item.role for item in self.roles]
 
+    def class_numbers(self):
+        return [item.class_number for item in self.classes]
+
+    def can_record_class(self, class_number):
+        return self.has_role("recorder") and class_number in self.class_numbers()
+
 
 class UserRole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,11 +60,20 @@ class UserRole(db.Model):
     __table_args__ = (UniqueConstraint("user_id", "role", name="uq_user_role"),)
 
 
+class UserClass(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    class_number = db.Column(db.String(20), nullable=False)
+    user = db.relationship("Users", back_populates="classes")
+    __table_args__ = (UniqueConstraint("user_id", "class_number", name="uq_user_class"),)
+
+
 class AbsenceStudent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     class_number = db.Column(db.String(20), nullable=False)
     absence_student = db.Column(db.Text, nullable=False)
     date = db.Column(db.String(10), nullable=False)
+    __table_args__ = (UniqueConstraint("class_number", "date", name="uq_absence_class_date"),)
 
 
 @login_manager.user_loader
@@ -72,24 +87,8 @@ def load_user(user_id):
 ROLE_NAMES = {"manager", "staff", "recorder"}
 
 
-def migrate_old_roles():
-    for user in Users.query.all():
-        if user.roles:
-            continue
-        if user.user_level == 1:
-            roles = ["recorder"]
-        elif user.user_level in (2, 3):
-            roles = ["manager"]
-        else:
-            roles = []
-        for role in roles:
-            user.roles.append(UserRole(role=role))
-    db.session.commit()
-
-
 with app.app_context():
     db.create_all()
-    migrate_old_roles()
 
 
 # ==================== Helpers ====================
@@ -124,6 +123,27 @@ def normalize_roles(value):
     return roles
 
 
+def normalize_classes(value):
+    if value is None:
+        return []
+    if isinstance(value, str):
+        values = value.replace("،", ",").split(",")
+    elif isinstance(value, list):
+        values = value
+    else:
+        return None
+    classes = []
+    for class_number in values:
+        class_number = str(class_number).strip()
+        if not class_number:
+            continue
+        if len(class_number) > 20:
+            return None
+        if class_number not in classes:
+            classes.append(class_number)
+    return classes
+
+
 def role_required(*allowed_roles):
     def decorator(view):
         @wraps(view)
@@ -140,8 +160,8 @@ def recorder_required(view):
     @wraps(view)
     @login_required
     def wrapped(*args, **kwargs):
-        if not current_user.has_role("recorder") or not current_user.class_number:
-            return render_template("error.html", status_code=403, e="برای ثبت غیبت باید نقش ثبت‌کننده و یک کلاس داشته باشید."), 403
+        if not current_user.has_role("recorder") or not current_user.class_numbers():
+            return render_template("error.html", status_code=403, e="برای ثبت غیبت باید نقش ثبت‌کننده و حداقل یک کلاس داشته باشید."), 403
         return view(*args, **kwargs)
     return wrapped
 
@@ -154,8 +174,26 @@ def staff_or_manager_required(view):
     return role_required("staff", "manager")(view)
 
 
+def requested_class_number(data=None):
+    data = data or {}
+    class_number = data.get("class_number") or request.args.get("class_number") or request.args.get("class")
+    return str(class_number).strip() if class_number else None
+
+
+def ensure_recording_class(class_number):
+    if not class_number:
+        return False
+    return current_user.can_record_class(class_number)
+
+
 def user_to_dict(user):
-    return {"id": user.id, "fullName": user.full_name, "username": user.username, "roles": user.role_names(), "classNumber": user.class_number}
+    return {
+        "id": user.id,
+        "fullName": user.full_name,
+        "username": user.username,
+        "roles": user.role_names(),
+        "classNumbers": user.class_numbers(),
+    }
 
 
 # ==================== Pages ====================
@@ -193,10 +231,13 @@ def dashboard():
 @app.route("/editAbsenceStudent")
 @recorder_required
 def ea_student():
-    record = AbsenceStudent.query.filter_by(class_number=current_user.class_number, date=today_jalali()).first()
+    class_number = requested_class_number()
+    if not ensure_recording_class(class_number):
+        return redirect(url_for("dashboard"))
+    record = AbsenceStudent.query.filter_by(class_number=class_number, date=today_jalali()).first()
     if not record:
         return redirect(url_for("dashboard"))
-    return render_template("edit_as.html", absence_student=convert_to_list(record.absence_student))
+    return render_template("edit_as.html", absence_student=convert_to_list(record.absence_student), selected_class=class_number)
 
 
 # ==================== Authentication APIs ====================
@@ -243,7 +284,13 @@ def login_api():
 @app.route("/api/userInfo", methods=["GET"])
 @login_required
 def user_info():
-    return jsonify(FullName=current_user.full_name, UserLevel=current_user.user_level, ClassNumber=current_user.class_number, Roles=current_user.role_names())
+    return jsonify(
+        id=current_user.id,
+        FullName=current_user.full_name,
+        UserLevel=current_user.user_level,
+        Roles=current_user.role_names(),
+        ClassNumbers=current_user.class_numbers(),
+    )
 
 
 # ==================== Absence APIs ====================
@@ -251,14 +298,17 @@ def user_info():
 @recorder_required
 def set_absence_student():
     data = request.get_json(silent=True) or {}
+    class_number = requested_class_number(data)
+    if not ensure_recording_class(class_number):
+        return jsonify(message="این کلاس به شما اختصاص داده نشده است.", category="danger"), 403
     normalized = normalize_absence_names(data.get("absenceStudent", ""))
     if normalized is None:
         return jsonify(message="اطلاعات غیبت معتبر نیست. حداکثر ۱۶ دانش‌آموز مجاز است.", category="danger"), 400
-    class_num, today = current_user.class_number, today_jalali()
-    existing = AbsenceStudent.query.filter_by(class_number=class_num, date=today).first()
+    today = today_jalali()
+    existing = AbsenceStudent.query.filter_by(class_number=class_number, date=today).first()
     if existing:
         return jsonify(message="غیبت این کلاس برای امروز قبلاً ثبت شده است.", category="warning"), 409
-    db.session.add(AbsenceStudent(class_number=class_num, absence_student=normalized, date=today))
+    db.session.add(AbsenceStudent(class_number=class_number, absence_student=normalized, date=today))
     db.session.commit()
     return jsonify(message="عملیات با موفقیت انجام شد.", category="success"), 201
 
@@ -267,10 +317,13 @@ def set_absence_student():
 @recorder_required
 def edit_absence_student():
     data = request.get_json(silent=True) or {}
+    class_number = requested_class_number(data)
+    if not ensure_recording_class(class_number):
+        return jsonify(message="این کلاس به شما اختصاص داده نشده است.", category="danger"), 403
     normalized = normalize_absence_names(data.get("absenceStudent", ""))
     if normalized is None:
         return jsonify(message="اطلاعات غیبت معتبر نیست. حداکثر ۱۶ دانش‌آموز مجاز است.", category="danger"), 400
-    record = AbsenceStudent.query.filter_by(class_number=current_user.class_number, date=today_jalali()).first()
+    record = AbsenceStudent.query.filter_by(class_number=class_number, date=today_jalali()).first()
     if not record:
         return jsonify(message="رکوردی پیدا نشد.", category="danger"), 404
     record.absence_student = normalized
@@ -281,7 +334,10 @@ def edit_absence_student():
 @app.route("/api/isEnterAbsenceStudent", methods=["GET"])
 @recorder_required
 def is_eas():
-    exists = AbsenceStudent.query.filter_by(class_number=current_user.class_number, date=today_jalali()).first() is not None
+    class_number = requested_class_number()
+    if not ensure_recording_class(class_number):
+        return jsonify(message="این کلاس به شما اختصاص داده نشده است.", category="danger"), 403
+    exists = AbsenceStudent.query.filter_by(class_number=class_number, date=today_jalali()).first() is not None
     return jsonify(entered=exists)
 
 
@@ -315,20 +371,23 @@ def create_user():
     username = (data.get("username") or "").strip()
     password = (data.get("password") or "").strip()
     roles = normalize_roles(data.get("roles", []))
-    class_number = (data.get("class_number") or "").strip() or None
+    classes = normalize_classes(data.get("class_numbers", data.get("classes", [])))
     if not full_name or not username or not password:
         return jsonify(message="نام، نام کاربری و رمز عبور الزامی است.", category="danger"), 400
     if roles is None or not roles:
         return jsonify(message="حداقل یک نقش انتخاب کنید.", category="danger"), 400
+    if classes is None:
+        return jsonify(message="لیست کلاس‌ها معتبر نیست.", category="danger"), 400
     if Users.query.filter_by(username=username).first():
         return jsonify(message="این نام کاربری قبلاً ثبت شده است.", category="danger"), 409
-    if "recorder" in roles and not class_number:
-        return jsonify(message="برای نقش ثبت‌کننده، شماره کلاس الزامی است.", category="danger"), 400
-    if class_number and Users.query.filter_by(class_number=class_number).first():
-        return jsonify(message="این کلاس قبلاً به یک کاربر اختصاص داده شده است.", category="danger"), 409
-    user = Users(full_name=full_name, username=username, user_level=0, class_number=class_number)
+    if "recorder" in roles and not classes:
+        return jsonify(message="برای نقش معلم / ثبت‌کننده حداقل یک کلاس انتخاب کنید.", category="danger"), 400
+    if "recorder" not in roles:
+        classes = []
+    user = Users(full_name=full_name, username=username, user_level=0)
     user.set_password(password)
     user.roles.extend(UserRole(role=role) for role in roles)
+    user.classes.extend(UserClass(class_number=class_number) for class_number in classes)
     db.session.add(user)
     db.session.commit()
     return jsonify(message="کاربر با موفقیت ایجاد شد.", category="success", user=user_to_dict(user)), 201
@@ -344,22 +403,26 @@ def update_user(user_id):
     full_name = (data.get("full_name") or "").strip()
     username = (data.get("username") or "").strip()
     roles = normalize_roles(data.get("roles")) if "roles" in data else user.role_names()
-    class_number = (data.get("class_number") or "").strip() or None
+    classes = normalize_classes(data.get("class_numbers", data.get("classes"))) if ("class_numbers" in data or "classes" in data) else user.class_numbers()
     if not full_name or not username:
         return jsonify(message="نام و نام کاربری الزامی است.", category="danger"), 400
     if roles is None or not roles:
         return jsonify(message="حداقل یک نقش انتخاب کنید.", category="danger"), 400
+    if classes is None:
+        return jsonify(message="لیست کلاس‌ها معتبر نیست.", category="danger"), 400
+    if "recorder" in roles and not classes:
+        return jsonify(message="برای نقش معلم / ثبت‌کننده حداقل یک کلاس انتخاب کنید.", category="danger"), 400
+    if "recorder" not in roles:
+        classes = []
     if Users.query.filter(Users.username == username, Users.id != user.id).first():
         return jsonify(message="این نام کاربری قبلاً ثبت شده است.", category="danger"), 409
-    if "recorder" in roles and not class_number:
-        return jsonify(message="برای نقش ثبت‌کننده، شماره کلاس الزامی است.", category="danger"), 400
-    if class_number and Users.query.filter(Users.class_number == class_number, Users.id != user.id).first():
-        return jsonify(message="این کلاس قبلاً به یک کاربر اختصاص داده شده است.", category="danger"), 409
-    user.full_name, user.username, user.class_number = full_name, username, class_number
+    user.full_name, user.username = full_name, username
     if data.get("password") and str(data.get("password")).strip():
         user.set_password(str(data.get("password")).strip())
     user.roles.clear()
+    user.classes.clear()
     user.roles.extend(UserRole(role=role) for role in roles)
+    user.classes.extend(UserClass(class_number=class_number) for class_number in classes)
     db.session.commit()
     return jsonify(message="اطلاعات کاربر به‌روزرسانی شد.", category="success", user=user_to_dict(user))
 
