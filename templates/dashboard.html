@@ -2,213 +2,38 @@
 
 {% block header %}
 <style>
-    .dashboard { max-width: 1200px; margin: 40px auto; padding: 20px; }
-    .card { background: rgba(20,20,30,.82); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 24px; margin-bottom: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 18px; }
-    .field { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
-    .field input, .field select { padding:10px 12px; border-radius:10px; border:1px solid #555; background:#11131a; color:#fff; }
-    button { cursor:pointer; }
-    .btn { border:0; border-radius:10px; padding:10px 15px; margin:4px; }
-    .primary { background:#2563eb; color:#fff; }
-    .danger { background:#dc2626; color:#fff; }
-    .success { background:#16a34a; color:#fff; }
-    .warning { background:#d97706; color:#fff; }
-    table { width:100%; border-collapse:collapse; margin-top:15px; }
-    th,td { padding:10px; border-bottom:1px solid #333; text-align:right; }
-    .role { display:inline-block; padding:4px 9px; margin:3px; border-radius:20px; background:#333; }
-    .hidden { display:none!important; }
-    .muted { opacity:.7; }
+.dashboard{max-width:1200px;margin:40px auto;padding:20px}.card{background:rgba(20,20,30,.82);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;margin-bottom:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}.field input,.field select{padding:10px 12px;border-radius:10px;border:1px solid #555;background:#11131a;color:#fff}button{cursor:pointer}.btn{border:0;border-radius:10px;padding:10px 15px;margin:4px}.primary{background:#2563eb;color:#fff}.danger{background:#dc2626;color:#fff}.success{background:#16a34a;color:#fff}.warning{background:#d97706;color:#fff}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{padding:10px;border-bottom:1px solid #333;text-align:right;vertical-align:top}.role{display:inline-block;padding:4px 9px;margin:3px;border-radius:20px;background:#333}.class-chip{display:inline-block;padding:4px 8px;margin:2px;border-radius:8px;background:#1f2937}.hidden{display:none!important}.muted{opacity:.7}
 </style>
 <title>داشبورد حضور و غیاب</title>
 {% endblock %}
 
 {% block body %}
 <div class="dashboard">
-    <div class="card">
-        <h2>سیستم حضور و غیاب</h2>
-        <p>خوش آمدید، <strong id="fullName">در حال بارگذاری...</strong></p>
-        <p>نقش‌ها: <span id="roles">در حال بارگذاری...</span></p>
-        <p id="classInfo" class="muted"></p>
-        <a class="btn danger" href="/logout">خروج</a>
-    </div>
-
-    <div id="recorderPanel" class="card hidden">
-        <h3>ثبت غیبت</h3>
-        <p class="muted">کلاس: <strong id="recorderClass">-</strong></p>
-        <div id="studentInputs" class="grid">
-            <div class="field"><input class="student" placeholder="نام دانش‌آموز غایب"></div>
-        </div>
-        <button id="addStudent" class="btn primary">+ افزودن دانش‌آموز</button>
-        <button id="noAbsence" class="btn warning">امروز غایب ندارم</button>
-        <button id="submitAbsence" class="btn success">ثبت غیبت</button>
-        <p id="recorderStatus"></p>
-        <a id="editAbsence" class="btn primary hidden" href="/editAbsenceStudent">ویرایش غیبت امروز</a>
-    </div>
-
-    <div id="absencePanel" class="card hidden">
-        <h3>غایبین امروز</h3>
-        <p>تعداد کل غایبین: <strong id="totalAbsent">0</strong></p>
-        <table>
-            <thead><tr><th>کلاس</th><th>تعداد</th><th>دانش‌آموزان</th></tr></thead>
-            <tbody id="absenceTable"></tbody>
-        </table>
-    </div>
-
-    <div id="managerPanel" class="card hidden">
-        <h3>مدیریت کاربران</h3>
-        <div class="grid">
-            <div class="field"><label>نام و نام خانوادگی</label><input id="newFullName"></div>
-            <div class="field"><label>نام کاربری</label><input id="newUsername"></div>
-            <div class="field"><label>رمز عبور</label><input id="newPassword" type="password"></div>
-            <div class="field"><label>کلاس (فقط برای ثبت‌کننده)</label><input id="newClass"></div>
-        </div>
-        <div>
-            <label><input type="checkbox" value="manager" class="newRole"> مدیر</label>
-            <label><input type="checkbox" value="staff" class="newRole"> کارشناس مدرسه</label>
-            <label><input type="checkbox" value="recorder" class="newRole"> ثبت‌کننده / معلم</label>
-        </div>
-        <button id="createUser" class="btn success">ایجاد کاربر</button>
-        <p id="managerStatus"></p>
-        <table>
-            <thead><tr><th>نام</th><th>نام کاربری</th><th>نقش‌ها</th><th>کلاس</th><th>عملیات</th></tr></thead>
-            <tbody id="usersTable"></tbody>
-        </table>
-    </div>
+<div class="alert" role="alert"></div>
+<div class="card"><h2>سیستم حضور و غیاب</h2><p>خوش آمدید، <strong id="fullName">در حال بارگذاری...</strong></p><p>نقش‌ها: <span id="roles">در حال بارگذاری...</span></p><p id="classInfo" class="muted"></p><a class="btn danger" href="/logout">خروج</a></div>
+<div id="recorderPanel" class="card hidden"><h3>ثبت غیبت</h3><div class="field"><label for="recorderClassSelect">کلاس مورد نظر</label><select id="recorderClassSelect"></select></div><div id="studentInputs" class="grid"><div class="field"><input class="student" placeholder="نام دانش‌آموز غایب"></div></div><button id="addStudent" class="btn primary">+ افزودن دانش‌آموز</button><button id="noAbsence" class="btn warning">امروز غایب ندارم</button><button id="submitAbsence" class="btn success">ثبت غیبت</button><p id="recorderStatus"></p><a id="editAbsence" class="btn primary hidden">ویرایش غیبت این کلاس</a></div>
+<div id="absencePanel" class="card hidden"><h3>غایبین امروز</h3><p>تعداد کل غایبین: <strong id="totalAbsent">0</strong></p><table><thead><tr><th>کلاس</th><th>تعداد</th><th>دانش‌آموزان</th></tr></thead><tbody id="absenceTable"></tbody></table></div>
+<div id="managerPanel" class="card hidden"><h3>مدیریت کاربران</h3><p class="muted">مدیر می‌تواند برای هر معلم چند کلاس تعیین کند؛ مثال: 701، 702، 801</p><div class="grid"><div class="field"><label>نام و نام خانوادگی</label><input id="newFullName"></div><div class="field"><label>نام کاربری</label><input id="newUsername"></div><div class="field"><label>رمز عبور</label><input id="newPassword" type="password"></div><div class="field"><label>کلاس‌های معلم</label><input id="newClasses" placeholder="701, 702, 801"></div></div><div><label><input type="checkbox" value="manager" class="newRole"> مدیر</label><label><input type="checkbox" value="staff" class="newRole"> کارشناس مدرسه</label><label><input type="checkbox" value="recorder" class="newRole"> معلم / ثبت‌کننده</label></div><button id="createUser" class="btn success">ایجاد کاربر</button><p id="managerStatus"></p><table><thead><tr><th>نام</th><th>نام کاربری</th><th>نقش‌ها</th><th>کلاس‌ها</th><th>عملیات</th></tr></thead><tbody id="usersTable"></tbody></table></div>
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-let currentUser = null;
-let absenceEntered = false;
-let noAbsence = false;
-
-function roleTitle(role) {
-    return { manager: "مدیر", staff: "کارشناس مدرسه", recorder: "معلم / ثبت‌کننده" }[role] || role;
-}
-function message(text, type="") {
-    const el = $(".alert");
-    showAlert(el, text, type || "info");
-}
-
-async function api(url, options={}) {
-    const response = await fetch(url, options);
-    let data = {};
-    try { data = await response.json(); } catch (_) {}
-    if (!response.ok) throw Object.assign(new Error(data.message || "خطا"), {data, response});
-    return data;
-}
-
-async function loadUser() {
-    currentUser = await api("/api/userInfo");
-    $("#fullName").textContent = currentUser.FullName || "-";
-    $("#roles").innerHTML = (currentUser.Roles || []).map(r => `<span class="role">${roleTitle(r)}</span>`).join("");
-    $("#classInfo").textContent = currentUser.ClassNumber ? `کلاس ثبت‌کننده: ${currentUser.ClassNumber}` : "";
-
-    const roles = currentUser.Roles || [];
-    if (roles.includes("recorder")) $("#recorderPanel").classList.remove("hidden");
-    if (roles.includes("staff") || roles.includes("manager")) $("#absencePanel").classList.remove("hidden");
-    if (roles.includes("manager")) $("#managerPanel").classList.remove("hidden");
-
-    if (roles.includes("recorder")) {
-        $("#recorderClass").textContent = currentUser.ClassNumber || "-";
-        await checkAbsence();
-    }
-    if (roles.includes("staff") || roles.includes("manager")) await loadAbsenceSummary();
-    if (roles.includes("manager")) await loadUsers();
-}
-
-async function checkAbsence() {
-    try {
-        const data = await api("/api/isEnterAbsenceStudent");
-        absenceEntered = data.entered;
-        if (absenceEntered) {
-            $("#editAbsence").classList.remove("hidden");
-            $("#submitAbsence").classList.add("hidden");
-            $("#addStudent").classList.add("hidden");
-            $("#noAbsence").classList.add("hidden");
-            $("#studentInputs").classList.add("hidden");
-            $("#recorderStatus").textContent = "غیبت امروز قبلاً ثبت شده است.";
-        }
-    } catch (e) { $("#recorderStatus").textContent = e.message; }
-}
-
-$("#addStudent").addEventListener("click", () => {
-    const count = $$(".student").length;
-    if (count >= 16) return message("حداکثر ۱۶ دانش‌آموز مجاز است.", "danger");
-    const div = document.createElement("div");
-    div.className = "field";
-    div.innerHTML = '<input class="student" placeholder="نام دانش‌آموز غایب">';
-    $("#studentInputs").appendChild(div);
-});
-
-$("#noAbsence").addEventListener("click", () => {
-    noAbsence = !noAbsence;
-    $("#noAbsence").textContent = noAbsence ? "دانش‌آموز غایب دارم" : "امروز غایب ندارم";
-    $("#studentInputs").classList.toggle("hidden", noAbsence);
-});
-
-$("#submitAbsence").addEventListener("click", async () => {
-    const names = $$(".student").map(i => i.value.trim()).filter(Boolean);
-    if (!noAbsence && !names.length) return message("حداقل یک دانش‌آموز وارد کنید یا گزینه بدون غیبت را انتخاب کنید.", "danger");
-    try {
-        await api("/api/setAbsenceStudent", {
-            method: "POST", headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({absenceStudent: noAbsence ? "" : names.join(" - ")})
-        });
-        message("غیبت با موفقیت ثبت شد.", "success");
-        await checkAbsence();
-        if (currentUser.Roles.includes("staff") || currentUser.Roles.includes("manager")) await loadAbsenceSummary();
-    } catch (e) { message(e.message, e.data.category || "danger"); }
-});
-
-async function loadAbsenceSummary() {
-    try {
-        const data = await api("/api/absenceSummary");
-        $("#totalAbsent").textContent = data.totalAbsent;
-        $("#absenceTable").innerHTML = data.classes.map(c =>
-            `<tr><td>${c.classNumber}</td><td>${c.absenceCount}</td><td>${c.students.join("، ") || "بدون غیبت"}</td></tr>`
-        ).join("") || '<tr><td colspan="3">هنوز غیبتی ثبت نشده است.</td></tr>';
-    } catch (e) { message(e.message, "danger"); }
-}
-
-async function loadUsers() {
-    try {
-        const data = await api("/api/users");
-        $("#usersTable").innerHTML = data.users.map(u => `
-            <tr>
-                <td>${u.fullName}</td><td>${u.username}</td>
-                <td>${u.roles.map(roleTitle).join("، ")}</td><td>${u.classNumber || "-"}</td>
-                <td>${u.id === currentUser.id ? "حساب فعلی" : `<button class="btn danger delete-user" data-id="${u.id}">حذف</button>`}</td>
-            </tr>`).join("");
-    } catch (e) { message(e.message, "danger"); }
-}
-
-$("#createUser").addEventListener("click", async () => {
-    const roles = $$(".newRole:checked").map(x => x.value);
-    const payload = {
-        full_name: $("#newFullName").value.trim(), username: $("#newUsername").value.trim(),
-        password: $("#newPassword").value.trim(), class_number: $("#newClass").value.trim(), roles
-    };
-    try {
-        await api("/api/users", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
-        message("کاربر ایجاد شد.", "success");
-        ["#newFullName","#newUsername","#newPassword","#newClass"].forEach(s => $(s).value = "");
-        $$(".newRole").forEach(x => x.checked = false);
-        await loadUsers();
-    } catch (e) { message(e.message, "danger"); }
-});
-
-$("#usersTable").addEventListener("click", async e => {
-    const btn = e.target.closest(".delete-user");
-    if (!btn) return;
-    if (!confirm("این کاربر حذف شود؟")) return;
-    try { await api(`/api/users/${btn.dataset.id}`, {method:"DELETE"}); await loadUsers(); message("کاربر حذف شد.", "success"); }
-    catch (err) { message(err.message, "danger"); }
-});
-
-loadUser().catch(e => message(e.message || "خطا در دریافت اطلاعات کاربر", "danger"));
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; let currentUser=null,noAbsence=false;
+function roleTitle(r){return{manager:"مدیر",staff:"کارشناس مدرسه",recorder:"معلم / ثبت‌کننده"}[r]||r}
+function message(t,type="info"){const e=$(".alert");if(e&&typeof showAlert==="function")showAlert(e,t,type);else console.log(t)}
+async function api(url,options={}){const response=await fetch(url,options);let data={};try{data=await response.json()}catch(_){}if(!response.ok)throw Object.assign(new Error(data.message||"خطا"),{data,response});return data}
+function selectedClass(){return $("#recorderClassSelect").value}
+async function loadUser(){currentUser=await api("/api/userInfo");$("#fullName").textContent=currentUser.FullName||"-";$("#roles").innerHTML=(currentUser.Roles||[]).map(r=>`<span class="role">${roleTitle(r)}</span>`).join("");const classes=currentUser.ClassNumbers||[];$("#classInfo").textContent=classes.length?`کلاس‌های من: ${classes.join("، ")}`:"";const roles=currentUser.Roles||[];if(roles.includes("recorder")){$("#recorderPanel").classList.remove("hidden");renderRecorderClasses(classes)}if(roles.includes("staff")||roles.includes("manager")){$("#absencePanel").classList.remove("hidden");await loadAbsenceSummary()}if(roles.includes("manager")){$("#managerPanel").classList.remove("hidden");await loadUsers()}}
+function renderRecorderClasses(classes){const s=$("#recorderClassSelect");s.innerHTML=classes.map(c=>`<option value="${c}">${c}</option>`).join("");if(!classes.length){$("#recorderStatus").textContent="هنوز کلاسی به شما اختصاص داده نشده است.";$("#submitAbsence").disabled=true;return}s.addEventListener("change",checkAbsence);checkAbsence()}
+async function checkAbsence(){const c=selectedClass();if(!c)return;noAbsence=false;$("#noAbsence").textContent="امروز غایب ندارم";$("#studentInputs").classList.remove("hidden");$("#submitAbsence").classList.remove("hidden");$("#addStudent").classList.remove("hidden");$("#noAbsence").classList.remove("hidden");$("#editAbsence").classList.add("hidden");$("#recorderStatus").textContent="";try{const d=await api(`/api/isEnterAbsenceStudent?class_number=${encodeURIComponent(c)}`);if(d.entered){$("#editAbsence").href=`/editAbsenceStudent?class_number=${encodeURIComponent(c)}`;$("#editAbsence").classList.remove("hidden");$("#submitAbsence").classList.add("hidden");$("#addStudent").classList.add("hidden");$("#noAbsence").classList.add("hidden");$("#studentInputs").classList.add("hidden");$("#recorderStatus").textContent="غیبت امروز این کلاس قبلاً ثبت شده است."}}catch(e){$("#recorderStatus").textContent=e.message}}
+$("#addStudent").addEventListener("click",()=>{if($$(".student").length>=16)return message("حداکثر ۱۶ دانش‌آموز مجاز است.","danger");const d=document.createElement("div");d.className="field";d.innerHTML='<input class="student" placeholder="نام دانش‌آموز غایب">';$("#studentInputs").appendChild(d)});
+$("#noAbsence").addEventListener("click",()=>{noAbsence=!noAbsence;$("#noAbsence").textContent=noAbsence?"دانش‌آموز غایب دارم":"امروز غایب ندارم";$("#studentInputs").classList.toggle("hidden",noAbsence)});
+$("#submitAbsence").addEventListener("click",async()=>{const names=$$(".student").map(i=>i.value.trim()).filter(Boolean);if(!noAbsence&&!names.length)return message("حداقل یک دانش‌آموز وارد کنید یا گزینه بدون غیبت را انتخاب کنید.","danger");try{await api("/api/setAbsenceStudent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({class_number:selectedClass(),absenceStudent:noAbsence?"":names.join(" - ")})});message("غیبت با موفقیت ثبت شد.","success");await checkAbsence();await loadAbsenceSummary()}catch(e){message(e.message,e.data.category||"danger")}});
+async function loadAbsenceSummary(){try{const d=await api("/api/absenceSummary");$("#totalAbsent").textContent=d.totalAbsent;$("#absenceTable").innerHTML=d.classes.map(c=>`<tr><td>${c.classNumber}</td><td>${c.absenceCount}</td><td>${c.students.join("، ")||"بدون غیبت"}</td></tr>`).join("")||'<tr><td colspan="3">هنوز غیبتی ثبت نشده است.</td></tr>'}catch(e){message(e.message,"danger")}}
+async function loadUsers(){try{const d=await api("/api/users");$("#usersTable").innerHTML=d.users.map(u=>`<tr><td>${u.fullName}</td><td>${u.username}</td><td>${u.roles.map(roleTitle).join("، ")}</td><td>${(u.classNumbers||[]).map(c=>`<span class="class-chip">${c}</span>`).join("")||"-"}</td><td>${u.id===currentUser.id?"حساب فعلی":`<button class="btn danger delete-user" data-id="${u.id}">حذف</button>`}</td></tr>`).join("")}catch(e){message(e.message,"danger")}}
+$("#createUser").addEventListener("click",async()=>{const roles=$$(".newRole:checked").map(x=>x.value),classes=$("#newClasses").value.split(",").map(x=>x.trim()).filter(Boolean),payload={full_name:$("#newFullName").value.trim(),username:$("#newUsername").value.trim(),password:$("#newPassword").value.trim(),class_numbers:classes,roles};try{await api("/api/users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});message("کاربر ایجاد شد.","success");["#newFullName","#newUsername","#newPassword","#newClasses"].forEach(s=>$(s).value="");$$('.newRole').forEach(x=>x.checked=false);await loadUsers()}catch(e){message(e.message,"danger")}});
+$("#usersTable").addEventListener("click",async e=>{const b=e.target.closest(".delete-user");if(!b)return;if(!confirm("این کاربر حذف شود؟"))return;try{await api(`/api/users/${b.dataset.id}`,{method:"DELETE"});await loadUsers();message("کاربر حذف شد.","success")}catch(err){message(err.message,"danger")}});
+loadUser().catch(e=>message(e.message||"خطا در دریافت اطلاعات کاربر","danger"));
 </script>
 {% endblock %}
