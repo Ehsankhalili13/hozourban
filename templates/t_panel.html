@@ -17,12 +17,10 @@
                     <span class="label">نام و نام خانوادگی:</span>
                     <span class="value val-ul-n">در حال بارگذاری...</span>
                 </div>
-
                 <div class="info-item role">
                     <span class="label">نقش من:</span>
                     <span class="value val-ul-r">در حال بارگذاری...</span>
                 </div>
-
                 <div class="info-item role">
                     <span class="label">شماره کلاس من :</span>
                     <span class="value val-ul-cn">در حال بارگذاری...</span>
@@ -33,11 +31,11 @@
                 <div class="form-group">
                     <div class="action-section">
                         <div class="button-group">
-                            <a href="" class="btn btn-success add-student">اضافه کردن دانش‌آموز غایب</a>
-                            <a href="" class="btn btn-warning no-student"> دانش آموز غایب ندارم!</a>
+                            <a href="#" class="btn btn-success add-student">اضافه کردن دانش‌آموز غایب</a>
+                            <a href="#" class="btn btn-warning no-student">دانش آموز غایب ندارم!</a>
                             <a href="/logout" class="btn btn-danger logout">خروج از حساب کاربری</a>
                             <hr>
-                            <a href="" class="btn btn-primary submit">ارسال فرم</a>
+                            <a href="#" class="btn btn-primary submit">ارسال فرم</a>
                         </div>
 
                         <div class="students-inputs" id="students-inputs">
@@ -57,182 +55,160 @@
 {% endblock %}
 
 {% block script %}
-    <script>
-        const addBtn = document.querySelector(".add-student");
-        const nasBtn = document.querySelector(".no-student");
-        const submitBtn = document.querySelector(".submit")
-        const inputsContainer = document.getElementById("students-inputs");
-        const alertEl = document.querySelector(".alert");
+<script>
+    const addBtn = document.querySelector(".add-student");
+    const nasBtn = document.querySelector(".no-student");
+    const submitBtn = document.querySelector(".submit");
+    const inputsContainer = document.getElementById("students-inputs");
+    const alertEl = document.querySelector(".alert");
 
+    let isEntered = false;
+    let isNoAbsenceStudent = false;
 
-        let CNum
-        let isEntered = false
-        let isNoAbsenceStudent = false
-        let isNasBtnclicked1 = false
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const response = await fetch("/api/userInfo");
+            if (!response.ok) throw new Error("userInfo failed");
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            try {
-                const auth = 'Basic ' + btoa('admin:9xiNCb06bOjK$Fh');
-                const res = await fetch("/api/userInfo", {
-                    method: "POST",
-                    headers: {
-                        'Authorization': auth,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ psw: "9xiNCb06bOjK$Fh" })
-                });
+            const data = await response.json();
+            document.querySelector(".val-ul-n").textContent = data.FullName || "-";
+            document.querySelector(".val-ul-r").textContent = convertRole(data.UserLevel);
+            document.querySelector(".val-ul-cn").textContent = data.ClassNumber || "-";
 
-                const data = await res.json();
+            const absenceResponse = await fetch("/api/isEnterAbsenceStudent");
+            if (!absenceResponse.ok) throw new Error("absence status failed");
 
-                CNum = data.ClassNumber
-                document.querySelector(".val-ul-n").textContent = data.FullName;
-                document.querySelector(".val-ul-r").textContent = convertRole(data.UserLevel);
-                document.querySelector(".val-ul-cn").textContent = data.ClassNumber;
-
-                const data2 = await (await fetch("/api/isEnterAbsenceStudent", {
-                    method: "POST",
-                    headers: {
-                        'Authorization': auth,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ ClassNumber: data.ClassNumber })
-                })).json();
-                const inputs = inputsContainer.querySelectorAll(".student-input");
-                if (data2.message == "Entered") { Entered(); isEntered = true }
-            } catch (err) {
-                document.querySelector(".val-ul-n").textContent = "خطا در دریافت اطلاعات";
-                document.querySelector(".val-ul-r").textContent = "خطا در دریافت اطلاعات";
-                document.querySelector(".val-ul-cn").textContent = "خطا در دریافت اطلاعات";
+            const absenceData = await absenceResponse.json();
+            if (absenceData.entered) {
+                Entered();
+                isEntered = true;
             }
-        });
+        } catch (err) {
+            document.querySelector(".val-ul-n").textContent = "خطا در دریافت اطلاعات";
+            document.querySelector(".val-ul-r").textContent = "خطا در دریافت اطلاعات";
+            document.querySelector(".val-ul-cn").textContent = "خطا در دریافت اطلاعات";
+        }
+    });
 
-        addBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (isEntered) {
-                showAlert(alertEl, "شما دانش آموزان خود را وارد کرده اید.برای تغییر رو دکمه 'ویرایش غایبان' ضربه بزنید.", "warning")
-            } else {
-                if (!isNoAbsenceStudent) {
-                    const inputs = inputsContainer.querySelectorAll(".student-input");
-                    if (inputs.length >= 16) {
-                        showAlert(alertEl, "حداکثر ۱۶ دانش‌آموز می‌توانید اضافه کنید.", "danger");
-                        return;
-                    }
+    addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
 
-                    const newInput = document.createElement("input");
-                    newInput.type = "text";
-                    newInput.placeholder = "نام دانش‌آموز غایب";
-                    newInput.classList.add("student-input");
-                    inputsContainer.appendChild(newInput);
+        if (isEntered) {
+            showAlert(alertEl, "غیبت امروز قبلاً ثبت شده است. برای تغییر از دکمه «ویرایش غایبان» استفاده کنید.", "warning");
+            return;
+        }
 
-                    updateGridColumns(inputs.length + 1);
-                } else {
-                    showAlert(alertEl, "ابتدا دکمه 'دانش آموز غایب دارم' را بزنید.", "danger")
-                }
-            }
-        });
+        if (isNoAbsenceStudent) {
+            showAlert(alertEl, "ابتدا حالت «دانش آموز غایب دارم» را فعال کنید.", "danger");
+            return;
+        }
 
-        nasBtn.addEventListener("click", (e) => {
-            e.preventDefault()
-            if (isEntered) {
-                showAlert(alertEl, "شما دانش آموزان خود را وارد کرده اید.برای تغییر رو دکمه 'ویرایش غایبان' ضربه بزنید.", "warning")
-            } else {
-                if (isNasBtnclicked1) {
-                    document.querySelector(".nas__text").classList.remove("ntext-true");
-                    nasBtn.textContent = "دانش آموز غایب ندارم!"
-                    isNasBtnclicked1 = false
-                    isNoAbsenceStudent = false
+        const inputs = inputsContainer.querySelectorAll(".student-input");
+        if (inputs.length >= 16) {
+            showAlert(alertEl, "حداکثر ۱۶ دانش‌آموز می‌توانید اضافه کنید.", "danger");
+            return;
+        }
 
-                    const newInput = document.createElement("input");
-                    newInput.type = "text";
-                    newInput.placeholder = "نام دانش‌آموز غایب";
-                    newInput.classList.add("student-input");
-                    inputsContainer.appendChild(newInput);
-                    const inputs = inputsContainer.querySelectorAll(".student-input");
-                    updateGridColumns(inputs.length + 1);
-                } else {
-                    isNasBtnclicked1 = true
-                    isNoAbsenceStudent = true
-                    nasBtn.textContent = "دانش آموز غایب دارم!"
-                    let inputs = inputsContainer.querySelectorAll(".student-input");
-                    let defaultInputLength = inputs.length
-                    let i = 0
-                    while (i <= defaultInputLength && inputs.length > 0) {
-                        console.log(`To While{ i : ${i} inputs : ${inputs.length} }`)
-                        inputs[inputs.length - 1].remove();
-                        updateGridColumns(inputs.length - 1);
-                        inputs = inputsContainer.querySelectorAll(".student-input");
-                        i++
-                    }
-                    document.querySelector(".nas__text").classList.add("ntext-true");
-                }
-            }
-        })
+        const newInput = document.createElement("input");
+        newInput.type = "text";
+        newInput.placeholder = "نام دانش‌آموز غایب";
+        newInput.className = "student-input";
+        inputsContainer.appendChild(newInput);
+        updateGridColumns(inputs.length + 1);
+    });
 
-        submitBtn.addEventListener("click", async (e) => {
-            e.preventDefault()
-            if (isEntered) {
-                showAlert(alertEl, "شما دانش آموزان خود را وارد کرده اید.برای تغییر رو دکمه 'ویرایش غایبان' ضربه بزنید.", "warning")
-            } else {
-                const btn = event.currentTarget
-                if (btn.disabled) return;
-                btn.disabled = true
-                const originalText = btn.textContent;
-                btn.textContent = "در حال ارسال"
-                const subReq = await fetch("/api/setAbsenceStudent", {
-                    method: "POST",
-                    headers: { 'Content-Type': 'Application/json' },
-                    body: JSON.stringify({ 'classNumber': CNum, 'absenceStudent': camaStudent() })
+    nasBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        if (isEntered) {
+            showAlert(alertEl, "غیبت امروز قبلاً ثبت شده است. برای تغییر از دکمه «ویرایش غایبان» استفاده کنید.", "warning");
+            return;
+        }
+
+        if (!isNoAbsenceStudent) {
+            isNoAbsenceStudent = true;
+            nasBtn.textContent = "دانش آموز غایب دارم!";
+            inputsContainer.innerHTML = "";
+            updateGridColumns(0);
+            document.querySelector(".nas__text").classList.add("ntext-true");
+            return;
+        }
+
+        isNoAbsenceStudent = false;
+        nasBtn.textContent = "دانش آموز غایب ندارم!";
+        inputsContainer.innerHTML = "<input type=\"text\" placeholder=\"نام دانش‌آموز غایب\" class=\"student-input\">";
+        updateGridColumns(1);
+        document.querySelector(".nas__text").classList.remove("ntext-true");
+    });
+
+    submitBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        if (isEntered) {
+            showAlert(alertEl, "غیبت امروز قبلاً ثبت شده است. برای تغییر از دکمه «ویرایش غایبان» استفاده کنید.", "warning");
+            return;
+        }
+
+        const names = [...document.querySelectorAll(".student-input")]
+            .map(input => input.value.trim())
+            .filter(Boolean);
+
+        if (!isNoAbsenceStudent && names.length === 0) {
+            showAlert(alertEl, "لطفاً حداقل یک دانش‌آموز را وارد کنید یا گزینه «دانش آموز غایب ندارم» را انتخاب کنید.", "danger");
+            return;
+        }
+
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = "در حال ارسال...";
+
+        try {
+            const response = await fetch("/api/setAbsenceStudent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    absenceStudent: isNoAbsenceStudent ? "" : names.join(" - ")
                 })
-                const res = await subReq.json()
-                showAlert(alertEl, res.message, res.category)
-                btn.disabled = false;
-                btn.textContent = originalText
-                setTimeout(() => { window.location.reload() }, 5000)
-            }
-        })
+            });
 
-        function camaStudent() {
-            const iL = document.querySelectorAll(".student-input").length
-            let aName = []
+            const data = await response.json();
+            showAlert(alertEl, data.message, data.category);
 
-            for (let index = 0; index < iL; index++) {
-                const elementValue = document.querySelector(`.student-input:nth-child(${index + 1})`).value;
-                if (elementValue == null) showAlert(alertEl, "لطفا تمام فیلد ها را پر کنید.", "danger")
-                aName.push(elementValue)
+            if (response.ok) {
+                setTimeout(() => window.location.reload(), 1500);
             }
-            aName = aName.join(" - ")
-            return aName
+        } catch (err) {
+            showAlert(alertEl, "ارتباط با سرور برقرار نشد.", "danger");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
         }
+    });
 
-        function convertRole(level) {
-            switch (level) {
-                case 1: return "معلم";
-                case 2: return "کادر مدرسه";
-                default: return "نامشخص";
-            }
+    function convertRole(level) {
+        switch (level) {
+            case 1: return "معلم";
+            case 2: return "مدیر";
+            case 3: return "مدیر ارشد";
+            default: return "نامشخص";
         }
+    }
 
-        function updateGridColumns(count) {
-            if (count <= 4) {
-                inputsContainer.style.gridTemplateColumns = "repeat(2, 1fr)";
-            } else if (count <= 9) {
-                inputsContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
-            } else {
-                inputsContainer.style.gridTemplateColumns = "repeat(4, 1fr)";
-            }
+    function updateGridColumns(count) {
+        if (count <= 4) {
+            inputsContainer.style.gridTemplateColumns = "repeat(2, 1fr)";
+        } else if (count <= 9) {
+            inputsContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
+        } else {
+            inputsContainer.style.gridTemplateColumns = "repeat(4, 1fr)";
         }
+    }
 
-        function Entered() {
-            let inputs = inputsContainer.querySelectorAll(".student-input");
-            let defaultInputLength = inputs.length
-            let i = 0
-            while (i <= defaultInputLength && inputs.length > 0) {
-                inputs[inputs.length - 1].remove();
-                updateGridColumns(inputs.length - 1);
-                inputs = inputsContainer.querySelectorAll(".student-input");
-                i++
-            }
-            document.querySelector(".submit-action").classList.add("sa-true");
-        }
-    </script>
+    function Entered() {
+        inputsContainer.innerHTML = "";
+        updateGridColumns(0);
+        document.querySelector(".submit-action").classList.add("sa-true");
+    }
+</script>
 {% endblock %}
