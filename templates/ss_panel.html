@@ -17,15 +17,10 @@
                     <span class="label">نام و نام خانوادگی:</span>
                     <span class="value val-ul-n">در حال بارگذاری...</span>
                 </div>
-
                 <div class="info-item role">
                     <span class="label">نقش من:</span>
                     <span class="value val-ul-r">در حال بارگذاری...</span>
                 </div>
-            </div>
-
-            <div class="action-bar">
-                <!-- <a href="/editSchoolInfo/$%kjkljfs5456/830013930000" class="btn btn-warning">تغییر اطلاعات کلاس ها و مدرسه</a> -->
             </div>
 
             <div class="chart-container" style="width: 100%; max-width: 900px; margin: 0 auto; height: 400px;">
@@ -36,76 +31,60 @@
 {% endblock %}
 
 {% block script %}
-    <script src="../../static/js/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
     <script>
         const alertEl = document.querySelector(".alert");
-        
-        let CNum
+        const chartCanvas = document.querySelector(".chart");
 
         document.addEventListener("DOMContentLoaded", async () => {
             try {
-                const auth = 'Basic ' + btoa('admin:9xiNCb06bOjK$Fh');
-                const userInfoData = await ( await fetch("/api/userInfo", {
-                    method: "POST",
-                    headers: {
-                        'Authorization': auth,
-                        'Content-Type': 'application/json'
+                const userResponse = await fetch("/api/userInfo");
+                if (!userResponse.ok) throw new Error();
+                const user = await userResponse.json();
+
+                document.querySelector(".val-ul-n").textContent = user.FullName || "-";
+                document.querySelector(".val-ul-r").textContent = convertRole(user.UserLevel);
+
+                const summaryResponse = await fetch("/api/absenceSummary");
+                if (!summaryResponse.ok) throw new Error();
+                const summary = await summaryResponse.json();
+
+                const labels = summary.classes.map(item => item.classNumber);
+                const values = summary.classes.map(item => item.absenceCount);
+
+                new Chart(chartCanvas.getContext("2d"), {
+                    type: "bar",
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: "تعداد دانش‌آموزان غایب هر کلاس",
+                            data: values,
+                            backgroundColor: "rgba(255, 159, 64, 0.7)",
+                            borderColor: "rgba(0, 0, 0, 1)",
+                            borderWidth: 1
+                        }]
                     },
-                    body: JSON.stringify({ psw: "9xiNCb06bOjK$Fh" })
-                })).json();
-
-                CNum = userInfoData.ClassNumber;
-                let role = convertRole(userInfoData.UserLevel);
-
-                document.querySelector(".val-ul-n").textContent = userInfoData.FullName;
-                document.querySelector(".val-ul-r").textContent = convertRole(userInfoData.UserLevel);
-            } catch (err) {
-                document.querySelector(".val-ul-n").textContent = "خطا در دریافت اطلاعات";
-                document.querySelector(".val-ul-r").textContent = "خطا در دریافت اطلاعات";
-                document.querySelector(".val-ul-cn").textContent = "خطا در دریافت اطلاعات";
-            }
-            try {
-                const auth = 'Basic ' + btoa('admin:9xiNCb06bOjK$Fh');
-                const userInfoData = await ( await fetch("/api/userInfo", {
-                    method: "POST",
-                    headers: {
-                        'Authorization': auth,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ psw: "9xiNCb06bOjK$Fh" })
-                })).json();
-            } catch (error) {
-                
-            }
-        });
-
-        const ctx = document.querySelector(".chart").getContext('2d');
-        const classNames = ["4/1", "4/2", "4/3", "4/4", "5/1", "5/2", "5/3", "5/4", "5/5", "6/1", "6/2", "6/3", "6/4"]
-        const absenceStudents = ["6", "3", "2", "5", "2", "3", "5", "6", "2", "4", "5", "1", "2"]
-        const myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: classNames,
-                datasets: [
-                    {
-                        label: 'تعداد دانش آموزان غایب هر کلاس',
-                        data: absenceStudents,
-                        backgroundColor: ['rgba(255, 159, 64, 0.7)'],
-                        borderColor: 'rgba(0, 0, 0, 1)',
-                        borderWidth: 1
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                            }
+                        }
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
+                });
+            } catch (error) {
+                showAlert(alertEl, "دریافت اطلاعات حضور و غیاب با خطا مواجه شد.", "danger");
             }
         });
 
         function convertRole(level) {
             switch (level) {
                 case 1: return "معلم";
-                case 2: return "مدیر" 
+                case 2: return "مدیر";
+                case 3: return "مدیر ارشد";
                 default: return "نامشخص";
             }
         }
