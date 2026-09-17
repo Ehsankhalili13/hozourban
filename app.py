@@ -91,6 +91,37 @@ with app.app_context():
     db.create_all()
 
 
+# ==================== Default Manager ====================
+def ensure_default_manager():
+    manager = (
+        Users.query.join(UserRole, UserRole.user_id == Users.id)
+        .filter(UserRole.role == "manager")
+        .first()
+    )
+    if manager:
+        return
+
+    username = os.environ.get("DEFAULT_MANAGER_USERNAME", "admin").strip() or "admin"
+    password = os.environ.get("DEFAULT_MANAGER_PASSWORD", "admin1234")
+    full_name = os.environ.get("DEFAULT_MANAGER_NAME", "مدیر سیستم").strip() or "مدیر سیستم"
+
+    existing = Users.query.filter_by(username=username).first()
+    if existing:
+        existing.roles.append(UserRole(role="manager"))
+        db.session.commit()
+        return
+
+    manager = Users(full_name=full_name, username=username, user_level=0)
+    manager.set_password(password)
+    manager.roles.append(UserRole(role="manager"))
+    db.session.add(manager)
+    db.session.commit()
+
+
+with app.app_context():
+    ensure_default_manager()
+
+
 # ==================== Helpers ====================
 def today_jalali():
     return str(JalaliDatetime.now().date())
@@ -187,13 +218,7 @@ def ensure_recording_class(class_number):
 
 
 def user_to_dict(user):
-    return {
-        "id": user.id,
-        "fullName": user.full_name,
-        "username": user.username,
-        "roles": user.role_names(),
-        "classNumbers": user.class_numbers(),
-    }
+    return {"id": user.id, "fullName": user.full_name, "username": user.username, "roles": user.role_names(), "classNumbers": user.class_numbers()}
 
 
 # ==================== Pages ====================
@@ -284,13 +309,7 @@ def login_api():
 @app.route("/api/userInfo", methods=["GET"])
 @login_required
 def user_info():
-    return jsonify(
-        id=current_user.id,
-        FullName=current_user.full_name,
-        UserLevel=current_user.user_level,
-        Roles=current_user.role_names(),
-        ClassNumbers=current_user.class_numbers(),
-    )
+    return jsonify(id=current_user.id, FullName=current_user.full_name, UserLevel=current_user.user_level, Roles=current_user.role_names(), ClassNumbers=current_user.class_numbers())
 
 
 # ==================== Absence APIs ====================
