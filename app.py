@@ -1,6 +1,4 @@
 import os
-import secrets
-import string
 from functools import wraps
 
 from flask import Flask, render_template, redirect, request, jsonify, url_for, Response, flash
@@ -234,11 +232,6 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/register")
-def register():
-    return render_template("register.html")
-
-
 @app.route("/logout")
 @login_required
 def logout():
@@ -266,32 +259,6 @@ def ea_student():
 
 
 # ==================== Authentication APIs ====================
-@app.route("/api/create_password/<length>")
-def create_password(length):
-    if not length.isdigit():
-        return jsonify(error="مقدار وارد شده معتبر نیست."), 400
-    length_int = int(length)
-    if not 4 <= length_int <= 64:
-        return jsonify(error="طول رمز باید بین 4 تا 64 باشد."), 400
-    characters = string.ascii_letters + string.digits
-    return jsonify(password="".join(secrets.choice(characters) for _ in range(length_int)))
-
-
-@app.route("/api/reg_api", methods=["POST"])
-def register_api():
-    data = request.get_json(silent=True) or {}
-    full_name = (data.get("full_name") or "").strip()
-    username = (data.get("username") or "").strip()
-    password = (data.get("password") or "").strip()
-    if not full_name or not username or not password:
-        return jsonify(message="نام، نام کاربری و رمز عبور الزامی است.", category="danger"), 400
-    if Users.query.filter_by(username=username).first():
-        return jsonify(message="این نام کاربری در سیستم وجود دارد.", category="danger"), 409
-    new_user = Users(full_name=full_name, username=username, user_level=0)
-    new_user.set_password(password)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify(message="ثبت نام با موفقیت انجام شد. حساب شما باید توسط مدیر فعال شود.", category="success"), 201
 
 
 @app.route("/api/login_api", methods=["POST"])
