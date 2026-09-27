@@ -2,9 +2,201 @@
 
 {% block header %}
 <style>
-.dashboard{width:min(1200px,calc(100% - 32px));margin:32px auto;padding:0}.card{background:rgba(20,20,30,.82);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:24px;margin-bottom:20px;box-sizing:border-box}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;min-width:0}.field input,.field select{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid #555;background:#11131a;color:#fff;outline:none}.field input:focus,.field select:focus{border-color:#2563eb}.student-field{position:relative}.student-input-wrap{position:relative}.student-input-wrap .student{padding-left:52px}.delete-input{position:absolute;left:7px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:9px;background:#dc2626;color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;cursor:pointer;transition:opacity .18s ease,transform .18s ease,background .18s ease;z-index:2}.student-input-wrap:hover .delete-input,.student-input-wrap:focus-within .delete-input{opacity:1;pointer-events:auto}.delete-input:hover{background:#b91c1c;transform:translateY(-50%) scale(1.04)}.delete-input svg{width:18px;height:18px}button{cursor:pointer}.btn{border:0;border-radius:10px;padding:10px 15px;margin:4px}.primary{background:#2563eb;color:#fff}.danger{background:#dc2626;color:#fff}.success{background:#16a34a;color:#fff}.warning{background:#d97706;color:#fff}table{width:100%;border-collapse:collapse;margin-top:15px;display:block;overflow-x:auto}thead,tbody{width:100%}th,td{padding:10px;border-bottom:1px solid #333;text-align:right;vertical-align:top;white-space:nowrap}.role{display:inline-block;padding:4px 9px;margin:3px;border-radius:20px;background:#333}.class-chip{display:inline-block;padding:4px 8px;margin:2px;border-radius:8px;background:#1f2937}.hidden{display:none!important}.muted{opacity:.7}.alert{max-width:100%;box-sizing:border-box}
-@media (max-width:768px){.dashboard{width:min(100% - 20px,680px);margin:16px auto}.card{padding:16px;border-radius:14px;margin-bottom:14px}.grid{grid-template-columns:1fr;gap:10px}.btn{width:100%;margin:4px 0}#recorderClassSelect{font-size:16px}.student-input-wrap .student{padding-left:48px}.delete-input{opacity:1;pointer-events:auto;width:34px;height:34px}th,td{font-size:14px;padding:8px}}
-@media (max-width:420px){.dashboard{width:calc(100% - 12px)}.card{padding:12px}h2{font-size:1.35rem}h3{font-size:1.15rem}}
+.dashboard {
+    color: #fff;
+    width:min(1200px,calc(100% - 32px));
+    margin:32px auto;
+    padding:0
+}
+.card {
+    background:rgba(20,20,30,.82);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:20px;
+    box-sizing:border-box
+}
+.grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:18px
+}
+.field {
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    margin-bottom:12px;
+    min-width:0
+}
+.field input,.field select {
+    width:100%;
+    box-sizing:border-box;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid #555;
+    background:#11131a;
+    color:#fff;
+    outline:none
+}
+.field input:focus,.field select:focus {
+    border-color:#2563eb
+}
+.student-field {
+    position:relative
+}
+.student-input-wrap {
+    position:relative
+}
+.student-input-wrap .student {
+    padding-left:52px
+}
+.delete-input {
+    position:absolute;
+    left:7px;
+    top:50%;
+    transform:translateY(-50%);
+    width:36px;
+    height:36px;
+    border:0;
+    border-radius:9px;
+    background:#dc2626;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    pointer-events:none;
+    cursor:pointer;
+    transition:opacity .18s ease,transform .18s ease,background .18s ease;
+    z-index:2
+}
+.student-input-wrap:hover .delete-input,.student-input-wrap:focus-within .delete-input {
+    opacity:1;
+    pointer-events:auto
+}
+.delete-input:hover {
+    background:#b91c1c;
+    transform:translateY(-50%) scale(1.04)
+}
+.delete-input svg {
+    width:18px;
+    height:18px
+}
+button {
+    cursor:pointer
+}
+.btn {
+    border:0;
+    border-radius:10px;
+    padding:10px 15px;
+    margin:4px
+}
+.primary {
+    background:#2563eb;
+    color:#fff
+}
+.danger {
+    background:#dc2626;
+    color:#fff
+}
+.success {
+    background:#16a34a;
+    color:#fff
+}
+.warning {
+    background:#d97706;
+    color:#fff
+}
+table {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    display:block;
+    overflow-x:auto
+}
+thead,tbody {
+    width:100%
+}
+th,td {
+    padding:10px;
+    border-bottom:1px solid #333;
+    text-align:right;
+    vertical-align:top;
+    white-space:nowrap
+}
+.role {
+    display:inline-block;
+    padding:4px 9px;
+    margin:3px;
+    border-radius:20px;
+    background:#333
+}
+.class-chip {
+    display:inline-block;
+    padding:4px 8px;
+    margin:2px;
+    border-radius:8px;
+    background:#1f2937
+}
+.hidden {
+    display:none!important
+}
+.muted {
+    opacity:.7
+}
+.alert {
+    max-width:100%;
+    box-sizing:border-box
+}
+@media (max-width:768px) {
+    .dashboard {
+        width:min(100% - 20px,680px);
+        margin:16px auto
+    }
+    .card {
+        padding:16px;
+        border-radius:14px;
+        margin-bottom:14px
+    }
+    .grid {
+        grid-template-columns:1fr;
+        gap:10px
+    }
+    .btn {
+        width:100%;
+        margin:4px 0
+    }
+    #recorderClassSelect {
+        font-size:16px
+    }
+    .student-input-wrap .student {
+        padding-left:48px
+    }
+    .delete-input {
+        opacity:1;
+        pointer-events:auto;
+        width:34px;
+        height:34px
+    }
+    th,td {
+        font-size:14px;
+        padding:8px
+    }
+}
+@media (max-width:420px) {
+    .dashboard {
+        width:calc(100% - 12px)
+    }
+    .card {
+        padding:12px
+    }
+    h2 {
+        font-size:1.35rem
+    }
+    h3 {
+        font-size:1.15rem
+    }
+}
 </style>
 <title>داشبورد حضور و غیاب</title>
 {% endblock %}
@@ -21,24 +213,197 @@
 
 {% block script %}
 <script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)]; let currentUser=null,noAbsence=false;
-function roleTitle(r){return{manager:"مدیر",staff:"کارشناس مدرسه",recorder:"معلم / ثبت‌کننده"}[r]||r}
-function message(t,type="info"){const e=$(".alert");if(e&&typeof showAlert==="function")showAlert(e,t,type);else console.log(t)}
-async function api(url,options={}){const response=await fetch(url,options);let data={};try{data=await response.json()}catch(_){}if(!response.ok)throw Object.assign(new Error(data.message||"خطا"),{data,response});return data}
-function selectedClass(){return $("#recorderClassSelect").value}
-function studentField(){const d=document.createElement("div");d.className="field student-field";d.innerHTML='<div class="student-input-wrap"><input class="student" placeholder="نام دانش‌آموز غایب"><button type="button" class="delete-input" aria-label="حذف این ورودی" title="حذف"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></div>';return d}
-function resetStudentInputs(){const box=$("#studentInputs");box.innerHTML="";box.appendChild(studentField())}
-async function loadUser(){currentUser=await api("/api/userInfo");$("#fullName").textContent=currentUser.FullName||"-";$("#roles").innerHTML=(currentUser.Roles||[]).map(r=>`<span class="role">${roleTitle(r)}</span>`).join("");const classes=currentUser.ClassNumbers||[];$("#classInfo").textContent=classes.length?`کلاس‌های من: ${classes.join("، ")}`:"";const roles=currentUser.Roles||[];if(roles.includes("recorder")){$("#recorderPanel").classList.remove("hidden");renderRecorderClasses(classes)}if(roles.includes("staff")||roles.includes("manager")){$("#absencePanel").classList.remove("hidden");await loadAbsenceSummary()}if(roles.includes("manager")){$("#managerPanel").classList.remove("hidden");await loadUsers()}}
-function renderRecorderClasses(classes){const s=$("#recorderClassSelect");s.innerHTML=classes.map(c=>`<option value="${c}">${c}</option>`).join("");if(!classes.length){$("#recorderStatus").textContent="هنوز کلاسی به شما اختصاص داده نشده است.";$("#submitAbsence").disabled=true;return}s.addEventListener("change",checkAbsence);checkAbsence()}
-async function checkAbsence(){const c=selectedClass();if(!c)return;noAbsence=false;$("#noAbsence").textContent="امروز غایب ندارم";$("#studentInputs").classList.remove("hidden");$("#submitAbsence").classList.remove("hidden");$("#addStudent").classList.remove("hidden");$("#noAbsence").classList.remove("hidden");$("#editAbsence").classList.add("hidden");$("#recorderStatus").textContent="";resetStudentInputs();try{const d=await api(`/api/isEnterAbsenceStudent?class_number=${encodeURIComponent(c)}`);if(d.entered){$("#editAbsence").href=`/editAbsenceStudent?class_number=${encodeURIComponent(c)}`;$("#editAbsence").classList.remove("hidden");$("#submitAbsence").classList.add("hidden");$("#addStudent").classList.add("hidden");$("#noAbsence").classList.add("hidden");$("#studentInputs").classList.add("hidden");$("#recorderStatus").textContent="غیبت امروز این کلاس قبلاً ثبت شده است."}}catch(e){$("#recorderStatus").textContent=e.message}}
-$("#addStudent").addEventListener("click",()=>{if($$(".student").length>=16)return message("حداکثر ۱۶ دانش‌آموز مجاز است.","danger");$("#studentInputs").appendChild(studentField())});
-$("#studentInputs").addEventListener("click",e=>{const b=e.target.closest(".delete-input");if(!b)return;b.closest(".student-field").remove();if(!$$('.student').length)$("#studentInputs").appendChild(studentField())});
-$("#noAbsence").addEventListener("click",()=>{noAbsence=!noAbsence;$("#noAbsence").textContent=noAbsence?"دانش‌آموز غایب دارم":"امروز غایب ندارم";$("#studentInputs").classList.toggle("hidden",noAbsence)});
-$("#submitAbsence").addEventListener("click",async()=>{const names=$$(".student").map(i=>i.value.trim()).filter(Boolean);if(!noAbsence&&!names.length)return message("حداقل یک دانش‌آموز وارد کنید یا گزینه بدون غیبت را انتخاب کنید.","danger");try{await api("/api/setAbsenceStudent",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({class_number:selectedClass(),absenceStudent:noAbsence?"":names.join(" - ")})});message("غیبت با موفقیت ثبت شد.","success");await checkAbsence();await loadAbsenceSummary()}catch(e){message(e.message,e.data.category||"danger")} });
-async function loadAbsenceSummary(){try{const d=await api("/api/absenceSummary");$("#totalAbsent").textContent=d.totalAbsent;$("#absenceTable").innerHTML=d.classes.map(c=>`<tr><td>${c.classNumber}</td><td>${c.absenceCount}</td><td>${c.students.join("، ")||"بدون غیبت"}</td></tr>`).join("")||'<tr><td colspan="3">هنوز غیبتی ثبت نشده است.</td></tr>'}catch(e){message(e.message,"danger")}}
-async function loadUsers(){try{const d=await api("/api/users");$("#usersTable").innerHTML=d.users.map(u=>`<tr><td>${u.fullName}</td><td>${u.username}</td><td>${u.roles.map(roleTitle).join("، ")}</td><td>${(u.classNumbers||[]).map(c=>`<span class="class-chip">${c}</span>`).join("")||"-"}</td><td>${u.id===currentUser.id?"حساب فعلی":`<button class="btn danger delete-user" data-id="${u.id}">حذف</button>`}</td></tr>`).join("")}catch(e){message(e.message,"danger")}}
-$("#createUser").addEventListener("click",async()=>{const roles=$$(".newRole:checked").map(x=>x.value),classes=$("#newClasses").value.split(",").map(x=>x.trim()).filter(Boolean),payload={full_name:$("#newFullName").value.trim(),username:$("#newUsername").value.trim(),password:$("#newPassword").value.trim(),class_numbers:classes,roles};try{await api("/api/users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});message("کاربر ایجاد شد.","success");["#newFullName","#newUsername","#newPassword","#newClasses"].forEach(s=>$(s).value="");$$(".newRole").forEach(x=>x.checked=false);await loadUsers()}catch(e){message(e.message,"danger")}});
-$("#usersTable").addEventListener("click",async e=>{const b=e.target.closest(".delete-user");if(!b)return;if(!confirm("این کاربر حذف شود؟"))return;try{await api(`/api/users/${b.dataset.id}`,{method:"DELETE"});await loadUsers();message("کاربر حذف شد.","success")}catch(err){message(err.message,"danger")}});
-loadUser().catch(e=>message(e.message||"خطا در دریافت اطلاعات کاربر","danger"));
+const $=s=>document.querySelector(s),  $$=s=>[...document.querySelectorAll(s)];
+let currentUser=null, noAbsence=false;
+function roleTitle(r) {
+    return {
+        manager:"مدیر", staff:"کارشناس مدرسه", recorder:"معلم / ثبت‌کننده"
+    }
+    [r]||r
+}
+function message(t, type="info") {
+    const e=$(".alert");
+    if(e&&typeof showAlert==="function")showAlert(e, t, type);
+    else console.log(t)
+}
+async function api(url, options= {
+}) {
+    const response=await fetch(url, options);
+    let data= {
+    };
+    try {
+        data=await response.json()
+    }
+    catch(_) {
+    }
+    if(!response.ok)throw Object.assign(new Error(data.message||"خطا"),  {
+        data, response
+    });
+    return data
+}
+function selectedClass() {
+    return $("#recorderClassSelect").value
+}
+function studentField() {
+    const d=document.createElement("div");
+    d.className="field student-field";
+    d.innerHTML='<div class="student-input-wrap"><input class="student" placeholder="نام دانش‌آموز غایب"><button type="button" class="delete-input" aria-label="حذف این ورودی" title="حذف"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></div>';
+    return d
+}
+function resetStudentInputs() {
+    const box=$("#studentInputs");
+    box.innerHTML="";
+    box.appendChild(studentField())
+}
+async function loadUser() {
+    currentUser=await api("/api/userInfo");
+    $("#fullName").textContent=currentUser.FullName||"-";
+    $("#roles").innerHTML=(currentUser.Roles||[]).map(r=>`<span class="role">${roleTitle(r)}</span>`).join("");
+    const classes=currentUser.ClassNumbers||[];
+    $("#classInfo").textContent=classes.length?`کلاس‌های من: ${classes.join("، ")}`:"";
+    const roles=currentUser.Roles||[];
+    if(roles.includes("recorder")) {
+        $("#recorderPanel").classList.remove("hidden");
+        renderRecorderClasses(classes)
+    }
+    if(roles.includes("staff")||roles.includes("manager")) {
+        $("#absencePanel").classList.remove("hidden");
+        await loadAbsenceSummary()
+    }
+    if(roles.includes("manager")) {
+        $("#managerPanel").classList.remove("hidden");
+        await loadUsers()
+    }
+}
+function renderRecorderClasses(classes) {
+    const s=$("#recorderClassSelect");
+    s.innerHTML=classes.map(c=>`<option value="${c}">${c}</option>`).join("");
+    if(!classes.length) {
+        $("#recorderStatus").textContent="هنوز کلاسی به شما اختصاص داده نشده است.";
+        $("#submitAbsence").disabled=true;
+        return
+    }
+    s.addEventListener("change", checkAbsence);
+    checkAbsence()
+}
+async function checkAbsence() {
+    const c=selectedClass();
+    if(!c)return;
+    noAbsence=false;
+    $("#noAbsence").textContent="امروز غایب ندارم";
+    $("#studentInputs").classList.remove("hidden");
+    $("#submitAbsence").classList.remove("hidden");
+    $("#addStudent").classList.remove("hidden");
+    $("#noAbsence").classList.remove("hidden");
+    $("#editAbsence").classList.add("hidden");
+    $("#recorderStatus").textContent="";
+    resetStudentInputs();
+    try {
+        const d=await api(`/api/isEnterAbsenceStudent?class_number=${encodeURIComponent(c)}`);
+        if(d.entered) {
+            $("#editAbsence").href=`/editAbsenceStudent?class_number=${encodeURIComponent(c)}`;
+            $("#editAbsence").classList.remove("hidden");
+            $("#submitAbsence").classList.add("hidden");
+            $("#addStudent").classList.add("hidden");
+            $("#noAbsence").classList.add("hidden");
+            $("#studentInputs").classList.add("hidden");
+            $("#recorderStatus").textContent="غیبت امروز این کلاس قبلاً ثبت شده است."
+        }
+    }
+    catch(e) {
+        $("#recorderStatus").textContent=e.message
+    }
+}
+$("#addStudent").addEventListener("click", ()=> {
+    if($$(".student").length>=16)return message("حداکثر ۱۶ دانش‌آموز مجاز است.", "danger");
+    $("#studentInputs").appendChild(studentField())
+});
+$("#studentInputs").addEventListener("click", e=> {
+    const b=e.target.closest(".delete-input");
+    if(!b)return;
+    b.closest(".student-field").remove();
+    if(!$$('.student').length)$("#studentInputs").appendChild(studentField())
+});
+$("#noAbsence").addEventListener("click", ()=> {
+    noAbsence=!noAbsence;
+    $("#noAbsence").textContent=noAbsence?"دانش‌آموز غایب دارم":"امروز غایب ندارم";
+    $("#studentInputs").classList.toggle("hidden", noAbsence)
+});
+$("#submitAbsence").addEventListener("click", async()=> {
+    const names=$$(".student").map(i=>i.value.trim()).filter(Boolean);
+    if(!noAbsence&&!names.length)return message("حداقل یک دانش‌آموز وارد کنید یا گزینه بدون غیبت را انتخاب کنید.", "danger");
+    try {
+        await api("/api/setAbsenceStudent",  {
+            method:"POST", headers: {
+                "Content-Type":"application/json"
+            }, body:JSON.stringify( {
+                class_number:selectedClass(), absenceStudent:noAbsence?"":names.join(" - ")
+            })
+        });
+        message("غیبت با موفقیت ثبت شد.", "success");
+        await checkAbsence();
+        await loadAbsenceSummary()
+    }
+    catch(e) {
+        message(e.message, e.data.category||"danger")
+    }
+});
+async function loadAbsenceSummary() {
+    try {
+        const d=await api("/api/absenceSummary");
+        $("#totalAbsent").textContent=d.totalAbsent;
+        $("#absenceTable").innerHTML=d.classes.map(c=>`<tr><td>${c.classNumber}</td><td>${c.absenceCount}</td><td>${c.students.join("، ")||"بدون غیبت"}</td></tr>`).join("")||'<tr><td colspan="3">هنوز غیبتی ثبت نشده است.</td></tr>'
+    }
+    catch(e) {
+        message(e.message, "danger")
+    }
+}
+async function loadUsers() {
+    try {
+        const d=await api("/api/users");
+        $("#usersTable").innerHTML=d.users.map(u=>`<tr><td>${u.fullName}</td><td>${u.username}</td><td>${u.roles.map(roleTitle).join("، ")}</td><td>${(u.classNumbers||[]).map(c=>`<span class="class-chip">$ {
+            c
+        }
+        </span>`).join("")||"-"}</td><td>${u.id===currentUser.id?"حساب فعلی":`<button class="btn danger delete-user" data-id="${u.id}">حذف</button>`}</td></tr>`).join("")
+    }
+    catch(e) {
+        message(e.message, "danger")
+    }
+}
+$("#createUser").addEventListener("click", async()=> {
+    const roles=$$(".newRole:checked").map(x=>x.value), classes=$("#newClasses").value.split(",").map(x=>x.trim()).filter(Boolean), payload= {
+        full_name:$("#newFullName").value.trim(), username:$("#newUsername").value.trim(), password:$("#newPassword").value.trim(), class_numbers:classes, roles
+    };
+    try {
+        await api("/api/users",  {
+            method:"POST", headers: {
+                "Content-Type":"application/json"
+            }, body:JSON.stringify(payload)
+        });
+        message("کاربر ایجاد شد.", "success");
+        ["#newFullName", "#newUsername", "#newPassword", "#newClasses"].forEach(s=>$(s).value="");
+        $$(".newRole").forEach(x=>x.checked=false);
+        await loadUsers()
+    }
+    catch(e) {
+        message(e.message, "danger")
+    }
+});
+$("#usersTable").addEventListener("click", async e=> {
+    const b=e.target.closest(".delete-user");
+    if(!b)return;
+    if(!confirm("این کاربر حذف شود؟"))return;
+    try {
+        await api(`/api/users/${b.dataset.id}`,  {
+            method:"DELETE"
+        });
+        await loadUsers();
+        message("کاربر حذف شد.", "success")
+    }
+    catch(err) {
+        message(err.message, "danger")
+    }
+});
+loadUser().catch(e=>message(e.message||"خطا در دریافت اطلاعات کاربر", "danger"));
 </script>
 {% endblock %}
