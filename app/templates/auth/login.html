@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ورود | حضوربان</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #5b657a;
+      --primary: #263f83;
+      --primary-hover: #1c3066;
+      --border: #d5dbe8;
+      --error-bg: #fff0f0;
+      --error-text: #9b1c1c;
+      --success-bg: #edf8f0;
+      --success-text: #17633a;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Tahoma, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #eef2ff 0%, var(--bg) 45%, #e8eef8 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(23, 32, 51, 0.08);
+      padding: 32px 28px;
+      border: 1px solid rgba(213, 219, 232, 0.7);
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.5rem;
+    }
+    .lead {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    form { display: grid; gap: 14px; }
+    label {
+      display: block;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      color: #2a3348;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      font: inherit;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fafbfe;
+    }
+    input:focus {
+      outline: none;
+      border-color: #7b93d4;
+      box-shadow: 0 0 0 3px rgba(38, 63, 131, 0.12);
+      background: #fff;
+    }
+    button {
+      margin-top: 4px;
+      padding: 13px 16px;
+      font: inherit;
+      font-weight: 600;
+      border: 0;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: var(--primary-hover); }
+    .messages { display: grid; gap: 8px; margin-bottom: 4px; }
+    .message {
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    .message.error { background: var(--error-bg); color: var(--error-text); }
+    .message.success { background: var(--success-bg); color: var(--success-text); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>حضوربان</h1>
+    <p class="lead">ورود به سامانه حضور و غیاب</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="messages">
+          {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div>
+        <label for="username">نام کاربری</label>
+        <input id="username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div>
+        <label for="password">رمز عبور</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit">ورود</button>
+    </form>
+  </div>
+</body>
+</html>

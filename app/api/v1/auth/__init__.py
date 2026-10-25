@@ -1,0 +1,1 @@
+"""API authentication endpoints planned."""

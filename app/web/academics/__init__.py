@@ -1,0 +1,1 @@
+"""Academic administration pages planned."""

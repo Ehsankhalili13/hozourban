@@ -1,0 +1,1 @@
+"""School academic structure domain."""
