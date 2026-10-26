@@ -83,12 +83,38 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def has_role(self, role_code: str, school_id: int | None = None) -> bool:
+        if self.is_system_admin:
+            return True
         for assignment in self.role_assignments:
             if assignment.role.code != role_code:
                 continue
             if assignment.school_id is None or assignment.school_id == school_id:
                 return True
         return False
+
+    def has_permission(self, permission_code: str, school_id: int | None = None) -> bool:
+        if self.is_system_admin:
+            return True
+        for assignment in self.role_assignments:
+            if assignment.school_id is not None and school_id is not None:
+                if assignment.school_id != school_id:
+                    continue
+            for perm in assignment.role.permissions:
+                if perm.code == permission_code:
+                    return True
+        return False
+
+    def permission_codes(self, school_id: int | None = None) -> set[str]:
+        if self.is_system_admin:
+            return {"*"}
+        codes: set[str] = set()
+        for assignment in self.role_assignments:
+            if assignment.school_id is not None and school_id is not None:
+                if assignment.school_id != school_id:
+                    continue
+            for perm in assignment.role.permissions:
+                codes.add(perm.code)
+        return codes
 
 
 @login_manager.user_loader

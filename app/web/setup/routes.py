@@ -3,7 +3,8 @@ from flask_login import current_user, login_user
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
-from app.models import User
+from app.models import Role, User, UserRole
+from app.services.seed import ensure_roles_and_permissions
 from app.web.setup import setup_bp
 
 
@@ -26,9 +27,8 @@ def index():
     ensure_tables()
 
     if not needs_setup():
-        # Setup already done — send user to login or dashboard.
         if current_user.is_authenticated:
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("dashboard.index"))
         return redirect(url_for("auth.login"))
 
     if request.method == "POST":
@@ -56,6 +56,8 @@ def index():
                 full_name=full_name,
             )
 
+        ensure_roles_and_permissions()
+
         user = User(
             username=username,
             full_name=full_name,
@@ -64,6 +66,15 @@ def index():
         )
         user.set_password(password)
         db.session.add(user)
+        db.session.flush()
+
+        admin_role = db.session.execute(
+            db.select(Role).where(Role.code == "system_admin")
+        ).scalar_one_or_none()
+        if admin_role:
+            db.session.add(
+                UserRole(user_id=user.id, role_id=admin_role.id, school_id=None)
+            )
 
         try:
             db.session.commit()
@@ -78,6 +89,6 @@ def index():
 
         login_user(user)
         flash("حساب مدیر اصلی با موفقیت ساخته شد. به حضوربان خوش آمدید.", "success")
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("dashboard.index"))
 
     return render_template("setup/index.html")

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ class_group.name }} | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ class_group.name }}</h1>
+    <p>{{ class_group.school.name }} · {{ class_group.academic_year.title }} · پایه {{ class_group.grade }}</p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a class="btn" href="{{ url_for('attendance.take', class_id=class_group.id) }}">ثبت حضور</a>
+    <a class="btn btn-secondary" href="{{ url_for('academics.list_classes') }}">بازگشت</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0;font-size:1.1rem">دانش‌آموزان کلاس ({{ students|length }})</h2>
+  {% if students %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>نام</th>
+          <th>کد دانش‌آموزی</th>
+          <th>کد ملی</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.full_name }}</td>
+          <td>{{ s.student_code or '—' }}</td>
+          <td>{{ s.national_id or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">دانش‌آموزی در این کلاس ثبت‌نام نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

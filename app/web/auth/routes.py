@@ -9,7 +9,7 @@ from app.web.auth import auth_bp
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("dashboard.index"))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -21,7 +21,7 @@ def login():
 
         if user and user.is_active and user.check_password(password):
             login_user(user)
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("dashboard.index"))
 
         flash("نام کاربری یا رمز عبور نادرست است.", "error")
 

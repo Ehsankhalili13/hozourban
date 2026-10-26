@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}دانش‌آموزان | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>دانش‌آموزان</h1>
+    <p>فهرست دانش‌آموزان فعال</p>
+  </div>
+  {% if current_user.has_permission('student.manage') %}
+  <a class="btn" href="{{ url_for('users.create_student') }}">دانش‌آموز جدید</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  {% if students %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>نام</th>
+          <th>مدرسه</th>
+          <th>کد دانش‌آموزی</th>
+          <th>کد ملی</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.full_name }}</td>
+          <td>{{ s.school.name }}</td>
+          <td>{{ s.student_code or '—' }}</td>
+          <td>{{ s.national_id or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">دانش‌آموزی ثبت نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

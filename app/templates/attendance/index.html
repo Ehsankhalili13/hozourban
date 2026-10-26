@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}حضور و غیاب | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>حضور و غیاب</h1>
+    <p>انتخاب کلاس برای ثبت یا مشاهده جلسات اخیر</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 style="margin-top:0;font-size:1.1rem">ثبت برای کلاس</h2>
+  {% if classes %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>کلاس</th>
+          <th>مدرسه</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in classes %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>{{ c.school.name }}</td>
+          <td>
+            <a class="btn btn-sm" href="{{ url_for('attendance.take', class_id=c.id) }}?session_date={{ today }}">ثبت امروز</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">ابتدا یک کلاس بسازید.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0;font-size:1.1rem">جلسات اخیر</h2>
+  {% if recent %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>تاریخ</th>
+          <th>کلاس</th>
+          <th>نوبت</th>
+          <th>خلاصه</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent %}
+        {% set summary = s.summary() %}
+        <tr>
+          <td>{{ s.session_date }}</td>
+          <td>{{ s.class_group.name }}</td>
+          <td>{{ s.period or '—' }}</td>
+          <td>
+            <span class="badge badge-present">ح {{ summary.present }}</span>
+            <span class="badge badge-absent">غ {{ summary.absent }}</span>
+            <span class="badge badge-late">ت {{ summary.late }}</span>
+          </td>
+          <td><a href="{{ url_for('attendance.view_session', session_id=s.id) }}">مشاهده</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">جلسه‌ای ثبت نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

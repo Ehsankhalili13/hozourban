@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}دانش‌آموز جدید | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>ثبت دانش‌آموز</h1>
+    <p>می‌توانید هم‌زمان در یک کلاس ثبت‌نام کنید.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label for="school_id">مدرسه *</label>
+      <select id="school_id" name="school_id" required>
+        <option value="">انتخاب کنید</option>
+        {% for s in schools %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="first_name">نام *</label>
+      <input id="first_name" name="first_name" required>
+    </div>
+    <div>
+      <label for="last_name">نام خانوادگی *</label>
+      <input id="last_name" name="last_name" required>
+    </div>
+    <div>
+      <label for="student_code">کد دانش‌آموزی</label>
+      <input id="student_code" name="student_code">
+    </div>
+    <div>
+      <label for="national_id">کد ملی</label>
+      <input id="national_id" name="national_id">
+    </div>
+    <div>
+      <label for="gender">جنسیت</label>
+      <select id="gender" name="gender">
+        <option value="">—</option>
+        <option value="male">پسر</option>
+        <option value="female">دختر</option>
+      </select>
+    </div>
+    <div>
+      <label for="class_group_id">ثبت‌نام در کلاس (اختیاری)</label>
+      <select id="class_group_id" name="class_group_id">
+        <option value="">بدون کلاس</option>
+        {% for c in classes %}
+        <option value="{{ c.id }}">{{ c.name }} — {{ c.school.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">ذخیره</button>
+      <a class="btn btn-secondary" href="{{ url_for('users.list_students') }}">انصراف</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

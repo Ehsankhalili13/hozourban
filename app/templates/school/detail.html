@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ school.name }} | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ school.name }}</h1>
+    <p>{{ school.address or 'آدرس ثبت نشده' }} {% if school.code %}· کد: {{ school.code }}{% endif %}</p>
+  </div>
+  <a class="btn btn-secondary" href="{{ url_for('school.list_schools') }}">بازگشت</a>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0;font-size:1.1rem">سال‌های تحصیلی</h2>
+  {% if years %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>عنوان</th>
+          <th>جاری</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for y in years %}
+        <tr>
+          <td>{{ y.title }}</td>
+          <td>
+            {% if y.is_current %}
+            <span class="badge badge-present">سال جاری</span>
+            {% else %}
+            <span class="badge badge-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">سال تحصیلی تعریف نشده است.</div>
+  {% endif %}
+
+  {% if current_user.has_permission('year.manage') %}
+  <hr style="border:none;border-top:1px solid #e7ebf3;margin:18px 0">
+  <form method="post" action="{{ url_for('school.add_year', school_id=school.id) }}" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label for="title">افزودن سال تحصیلی</label>
+      <input id="title" name="title" placeholder="1404-1405" required>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" name="is_current" style="width:auto"> به‌عنوان سال جاری
+    </label>
+    <div class="form-actions">
+      <button class="btn btn-sm" type="submit">افزودن</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

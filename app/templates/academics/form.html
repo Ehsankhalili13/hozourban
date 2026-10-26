@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}کلاس جدید | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>ثبت کلاس جدید</h1>
+    <p>کلاس را به مدرسه و سال تحصیلی وصل کنید.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label for="school_id">مدرسه *</label>
+      <select id="school_id" name="school_id" required>
+        <option value="">انتخاب کنید</option>
+        {% for s in schools %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="academic_year_id">سال تحصیلی *</label>
+      <select id="academic_year_id" name="academic_year_id" required>
+        <option value="">انتخاب کنید</option>
+        {% for y in years %}
+        <option value="{{ y.id }}">{{ y.title }} — {{ y.school.name }}{% if y.is_current %} (جاری){% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="name">نام نمایشی کلاس *</label>
+      <input id="name" name="name" placeholder="هفتم الف" required>
+    </div>
+    <div>
+      <label for="grade">پایه / مقطع *</label>
+      <input id="grade" name="grade" placeholder="هفتم" required>
+    </div>
+    <div>
+      <label for="section">شاخه / بخش</label>
+      <input id="section" name="section" placeholder="الف">
+    </div>
+    <div>
+      <label for="capacity">ظرفیت</label>
+      <input id="capacity" name="capacity" type="number" min="1">
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">ذخیره</button>
+      <a class="btn btn-secondary" href="{{ url_for('academics.list_classes') }}">انصراف</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

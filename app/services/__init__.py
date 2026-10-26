@@ -1,1 +1,4 @@
-"""Application use cases coordinating core logic and ports."""
+from app.services.seed import ensure_roles_and_permissions
+
+__all__ = ["ensure_roles_and_permissions"]
+

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}جلسه {{ session.session_date }} | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ session.class_group.name }} — {{ session.session_date }}</h1>
+    <p>
+      {{ session.class_group.school.name }}
+      {% if session.period %} · {{ session.period }}{% endif %}
+      {% if session.taken_by %} · ثبت توسط {{ session.taken_by.full_name }}{% endif %}
+    </p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a class="btn" href="{{ url_for('attendance.take', class_id=session.class_group_id) }}?session_date={{ session.session_date }}{% if session.period %}&period={{ session.period }}{% endif %}">ویرایش</a>
+    <a class="btn btn-secondary" href="{{ url_for('attendance.index') }}">بازگشت</a>
+  </div>
+</div>
+
+<div class="grid-3" style="margin-bottom:16px">
+  <div class="stat"><div class="label">حاضر</div><div class="value">{{ summary.present }}</div></div>
+  <div class="stat"><div class="label">غایب</div><div class="value">{{ summary.absent }}</div></div>
+  <div class="stat"><div class="label">تأخیر / موجه</div><div class="value">{{ summary.late + summary.excused }}</div></div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>نام</th>
+          <th>وضعیت</th>
+          <th>یادداشت</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.student.full_name }}</td>
+          <td>
+            {% if r.status == 'present' %}<span class="badge badge-present">حاضر</span>
+            {% elif r.status == 'absent' %}<span class="badge badge-absent">غایب</span>
+            {% elif r.status == 'late' %}<span class="badge badge-late">تأخیر</span>
+            {% else %}<span class="badge badge-excused">موجه</span>{% endif %}
+          </td>
+          <td>{{ r.note or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

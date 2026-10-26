@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}داشبورد | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>سلام، {{ user.full_name }}</h1>
+    <p>خلاصه وضعیت سامانه حضور و غیاب</p>
+  </div>
+  <a class="btn" href="{{ url_for('attendance.index') }}">ثبت حضور امروز</a>
+</div>
+
+<div class="grid-3" style="margin-bottom:18px">
+  <div class="stat">
+    <div class="label">مدارس</div>
+    <div class="value">{{ stats.schools }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">کلاس‌ها</div>
+    <div class="value">{{ stats.classes }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">دانش‌آموزان</div>
+    <div class="value">{{ stats.students }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="page-header" style="margin-bottom:12px">
+    <div>
+      <h1 style="font-size:1.15rem">آخرین جلسات حضور و غیاب</h1>
+      <p>امروز: {{ stats.today_sessions }} جلسه ثبت شده</p>
+    </div>
+  </div>
+  {% if recent_sessions %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>تاریخ</th>
+          <th>کلاس</th>
+          <th>زنگ / نوبت</th>
+          <th>خلاصه</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent_sessions %}
+        {% set summary = s.summary() %}
+        <tr>
+          <td>{{ s.session_date }}</td>
+          <td>{{ s.class_group.name }}</td>
+          <td>{{ s.period or '—' }}</td>
+          <td>
+            <span class="badge badge-present">ح {{ summary.present }}</span>
+            <span class="badge badge-absent">غ {{ summary.absent }}</span>
+            <span class="badge badge-late">ت {{ summary.late }}</span>
+            <span class="badge badge-excused">م {{ summary.excused }}</span>
+          </td>
+          <td><a href="{{ url_for('attendance.view_session', session_id=s.id) }}">مشاهده</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">هنوز جلسه حضوری ثبت نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

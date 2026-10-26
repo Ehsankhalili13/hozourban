@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}مدارس | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>مدارس</h1>
+    <p>مدیریت مدارس تعریف‌شده در سامانه</p>
+  </div>
+  {% if current_user.has_permission('school.manage') %}
+  <a class="btn" href="{{ url_for('school.create_school') }}">مدرسه جدید</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  {% if schools %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>نام</th>
+          <th>کد</th>
+          <th>وضعیت</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in schools %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.code or '—' }}</td>
+          <td>
+            {% if s.is_active %}
+            <span class="badge badge-present">فعال</span>
+            {% else %}
+            <span class="badge badge-muted">غیرفعال</span>
+            {% endif %}
+          </td>
+          <td><a href="{{ url_for('school.detail_school', school_id=s.id) }}">جزئیات</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">هنوز مدرسه‌ای ثبت نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}مدرسه جدید | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>ثبت مدرسه جدید</h1>
+    <p>پس از ثبت می‌توانید کلاس و دانش‌آموز اضافه کنید.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="post" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label for="name">نام مدرسه *</label>
+      <input id="name" name="name" required>
+    </div>
+    <div>
+      <label for="code">کد مدرسه</label>
+      <input id="code" name="code">
+    </div>
+    <div>
+      <label for="address">آدرس</label>
+      <input id="address" name="address">
+    </div>
+    <div>
+      <label for="year_title">سال تحصیلی جاری (اختیاری)</label>
+      <input id="year_title" name="year_title" placeholder="مثال: 1404-1405">
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">ذخیره</button>
+      <a class="btn btn-secondary" href="{{ url_for('school.list_schools') }}">انصراف</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

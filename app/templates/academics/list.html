@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}کلاس‌ها | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>کلاس‌ها</h1>
+    <p>کلاس‌های فعال در مدارس</p>
+  </div>
+  {% if current_user.has_permission('class.manage') %}
+  <a class="btn" href="{{ url_for('academics.create_class') }}">کلاس جدید</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  {% if classes %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>نام کلاس</th>
+          <th>مدرسه</th>
+          <th>سال تحصیلی</th>
+          <th>پایه</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in classes %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>{{ c.school.name }}</td>
+          <td>{{ c.academic_year.title }}</td>
+          <td>{{ c.grade }}{% if c.section %} — {{ c.section }}{% endif %}</td>
+          <td><a href="{{ url_for('academics.detail_class', class_id=c.id) }}">جزئیات</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">کلاسی ثبت نشده است.</div>
+  {% endif %}
+</div>
+{% endblock %}

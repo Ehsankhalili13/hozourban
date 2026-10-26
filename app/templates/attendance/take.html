@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}ثبت حضور — {{ class_group.name }} | حضوربان{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>ثبت حضور: {{ class_group.name }}</h1>
+    <p>{{ class_group.school.name }} · {{ class_group.academic_year.title }}</p>
+  </div>
+  <a class="btn btn-secondary" href="{{ url_for('attendance.index') }}">بازگشت</a>
+</div>
+
+<div class="card">
+  <form method="get" class="form-grid" style="max-width:100%;grid-template-columns:1fr 1fr auto;align-items:end;margin-bottom:18px">
+    <div>
+      <label for="session_date">تاریخ</label>
+      <input id="session_date" name="session_date" type="date" value="{{ session_date }}">
+    </div>
+    <div>
+      <label for="period">نوبت / زنگ (اختیاری)</label>
+      <input id="period" name="period" value="{{ period }}" placeholder="صبح / زنگ ۱">
+    </div>
+    <button class="btn btn-secondary" type="submit">بارگذاری</button>
+  </form>
+
+  {% if not students %}
+  <div class="empty">دانش‌آموزی در این کلاس نیست. ابتدا دانش‌آموز اضافه کنید.</div>
+  {% else %}
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="session_date" value="{{ session_date }}">
+    <input type="hidden" name="period" value="{{ period }}">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>نام</th>
+            <th>وضعیت</th>
+            <th>یادداشت</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          {% set mark = marks.get(s.id) %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ s.full_name }}</td>
+            <td>
+              <div class="status-pills">
+                {% for st in statuses %}
+                <label>
+                  <input type="radio" name="status_{{ s.id }}" value="{{ st }}"
+                    {% if (mark and mark.status == st) or (not mark and st == 'present') %}checked{% endif %}>
+                  <span class="{{ st }}">
+                    {% if st == 'present' %}حاضر
+                    {% elif st == 'absent' %}غایب
+                    {% elif st == 'late' %}تأخیر
+                    {% else %}موجه{% endif %}
+                  </span>
+                </label>
+                {% endfor %}
+              </div>
+            </td>
+            <td>
+              <input name="note_{{ s.id }}" value="{{ mark.note if mark and mark.note else '' }}" placeholder="—">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions" style="margin-top:16px">
+      <button class="btn" type="submit">ذخیره حضور و غیاب</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
